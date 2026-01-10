@@ -1,0 +1,71 @@
+databases:
+  - name: depot-db
+    databaseName: depot_twin_db
+    user: depot_user
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: depot-dashboard
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn dashboard:server -b 0.0.0.0:$PORT
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: depot-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: depot-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: depot-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: depot-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: depot-db
+          property: database
+      - key: API_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+  - type: web
+    name: depot-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn api.app:app -b 0.0.0.0:$PORT
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: depot-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: depot-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: depot-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: depot-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: depot-db
+          property: database
+      - key: API_KEY
+        generateValue: true

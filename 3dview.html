@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Depot Digital Twin - 3D Depot Viewer</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #282c34; color: white; overflow: hidden; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            border: 1px solid #555;
+            display: none;
+            max-width: 300px;
+            font-size: 14px;
+        }
+        #info-panel h3 { margin-top: 0; color: #61dafb; }
+        #info-panel p { margin: 5px 0; }
+        #title-card {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            text-align: center;
+        }
+        #title-card h1 { font-size: 24px; margin: 0; }
+        #title-card p { font-size: 14px; margin: 5px 0 0 0; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div id="info-panel">
+        <h3 id="asset-id"></h3>
+        <p id="asset-type"></p>
+        <p id="asset-data"></p>
+    </div>
+    <div id="title-card">
+        <h1>Fuel Depot Digital Twin</h1>
+        <p>Interactive 3D Facility View</p>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Data Source (from depot_layout.py) ---
+        const DEPOT_LAYOUT = {
+            "tanks": {
+                "T-121": {"x": 15, "y": 70, "diameter_m": 20}, "T-122": {"x": 15, "y": 55, "diameter_m": 20},
+                "T-123": {"x": 35, "y": 70, "diameter_m": 20}, "T-124": {"x": 35, "y": 55, "diameter_m": 20},
+                "T-101": {"x": 58, "y": 80, "diameter_m": 2}, "T-102": {"x": 68, "y": 80, "diameter_m": 7.2},
+                "T-103": {"x": 58, "y": 68, "diameter_m": 12.6}, "T-141": {"x": 90, "y": 80, "diameter_m": 11.6},
+                "T-142": {"x": 105, "y": 80, "diameter_m": 11.6}, "T-143": {"x": 90, "y": 65, "diameter_m": 11.6},
+                "T-144": {"x": 105, "y": 65, "diameter_m": 11.6}, "T-5801": {"x": 90, "y": 100, "diameter_m": 21.7},
+                "T-5802": {"x": 110, "y": 95, "diameter_m": 21.8}, "T-5803": {"x": 110, "y": 75, "diameter_m": 21.3},
+                "T-5804": {"x": 95, "y": 80, "diameter_m": 11.3},
+            },
+            "gantries": [{"id": "Loading Gantry", "x": 63, "y": 48, "width": 18, "height": 6}],
+            "buildings": {
+                "Admin Area": {"x": 30, "y": 15, "width": 20, "height": 10}, "Control Room": {"x": 55, "y": 30, "width": 15, "height": 8},
+                "Ullage Area": {"x": 75, "y": 80, "width": 8, "height": 6}, "PL Receipt Area": {"x": 95, "y": 45, "width": 12, "height": 6},
+                "Security Cabin G1": {"x": 73, "y": 40, "width": 4, "height": 3}, "Security Cabin G2": {"x": 48, "y": 40, "width": 4, "height": 3},
+            },
+            "bund_walls": {
+                "Area A": "M 5 25 L 5 80 L 45 80 L 45 25 Z", "Area B": "M 46 60 L 46 90 L 73 90 L 73 55 L 70 55 L 70 60 Z",
+                "Area C": "M 74 55 L 74 90 L 115 90 L 115 55 Z", "Area AT&V": "M 80 85 L 80 105 L 118 105 L 118 60 L 93 60 L 93 85 Z"
+            }
+        };
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x282c34);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(-30, 50, 20);
+        scene.add(directionalLight);
+
+        // --- Controls ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 50;
+        controls.maxDistance = 200;
+        controls.maxPolarAngle = Math.PI / 2.2;
+
+        // --- Materials ---
+        const mat_tank = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.7, roughness: 0.3 });
+        const mat_building = new THREE.MeshStandardMaterial({ color: 0x6c757d, roughness: 0.8 });
+        const mat_ground = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.9 });
+        const mat_bund = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.8 });
+
+        // --- Object Groups ---
+        const depotGroup = new THREE.Group();
+        scene.add(depotGroup);
+        const tanksGroup = new THREE.Group();
+        scene.add(tanksGroup);
+        
+        // --- Scene Generation ---
+        function createDepot() {
+            // Ground Plane
+            const groundGeo = new THREE.PlaneGeometry(200, 200);
+            const ground = new THREE.Mesh(groundGeo, mat_ground);
+            ground.rotation.x = -Math.PI / 2;
+            depotGroup.add(ground);
+
+            // Tanks
+            Object.entries(DEPOT_LAYOUT.tanks).forEach(([name, specs]) => {
+                const radius = specs.diameter_m / 2;
+                const height = 16;
+                const tankGeo = new THREE.CylinderGeometry(radius, radius, height, 64);
+                const tank = new THREE.Mesh(tankGeo, mat_tank.clone());
+                tank.position.set(specs.x - 60, height / 2, -(specs.y - 60)); // Center and flip Z for correct orientation
+                tank.name = name;
+                tank.userData = { type: 'Tank', ...specs };
+                tanksGroup.add(tank);
+            });
+
+            // Buildings and Gantries
+            const allBuildings = {...DEPOT_LAYOUT.buildings, ...Object.fromEntries(DEPOT_LAYOUT.gantries.map(g => [g.id, g]))};
+            Object.entries(allBuildings).forEach(([name, specs]) => {
+                const buildingGeo = new THREE.BoxGeometry(specs.width, 5, specs.height);
+                const building = new THREE.Mesh(buildingGeo, mat_building);
+                building.position.set(specs.x - 60, 2.5, -(specs.y - 60));
+                building.name = name;
+                building.userData = { type: 'Building', ...specs };
+                depotGroup.add(building);
+            });
+            
+            // Bund Walls
+            Object.values(DEPOT_LAYOUT.bund_walls).forEach(pathStr => {
+                const shape = new THREE.Shape();
+                const points = pathStr.replace(/[M,Z]/g, '').replace(/L/g, '|').trim().split('|');
+                points.forEach((pointStr, index) => {
+                    const [x, y] = pointStr.trim().split(' ').map(Number);
+                    if (index === 0) shape.moveTo(x - 60, -(y - 60));
+                    else shape.lineTo(x - 60, -(y - 60));
+                });
+                const extrudeSettings = { depth: 2, bevelEnabled: false };
+                const wallGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                const wall = new THREE.Mesh(wallGeo, mat_bund);
+                wall.rotation.x = -Math.PI / 2;
+                depotGroup.add(wall);
+            });
+        }
+
+        // --- Interaction ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedObject = null;
+
+        function onMouseClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(tanksGroup.children);
+
+            if (intersects.length > 0) {
+                if (selectedObject) {
+                    selectedObject.material.emissive.setHex(0x000000);
+                }
+                selectedObject = intersects[0].object;
+                selectedObject.material.emissive.setHex(0x61dafb); // Highlight color
+                
+                updateInfoPanel(selectedObject);
+            } else {
+                if (selectedObject) {
+                    selectedObject.material.emissive.setHex(0x000000);
+                }
+                selectedObject = null;
+                document.getElementById('info-panel').style.display = 'none';
+            }
+        }
+        
+        function updateInfoPanel(object) {
+            const panel = document.getElementById('info-panel');
+            document.getElementById('asset-id').innerText = object.name;
+            document.getElementById('asset-type').innerText = `Type: ${object.userData.type}`;
+            
+            const level = (Math.random() * 100).toFixed(2); // Simulate live data
+            document.getElementById('asset-data').innerText = `Level: ${level}%`;
+            
+            panel.style.display = 'block';
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            // Simulate live data updates for tank colors
+            tanksGroup.children.forEach(tank => {
+                const time = Date.now() * 0.0005;
+                const noise = Math.sin(time + tank.position.x);
+                const level_pct = (noise + 1) / 2 * 100; // 0 to 100
+                
+                if (tank !== selectedObject) { // Don't change color if selected
+                    if (level_pct > 90) tank.material.color.setHex(0xff0000);
+                    else if (level_pct > 80) tank.material.color.setHex(0xffa500);
+                    else if (level_pct > 10) tank.material.color.setHex(0x008000);
+                    else tank.material.color.setHex(0x4169e1);
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        window.addEventListener('click', onMouseClick);
+        
+        // --- Initialization ---
+        createDepot();
+        camera.position.set(60, 100, 120);
+        controls.target.set(30, 0, -50);
+        animate();
+
+    </script>
+</body>
+</html>

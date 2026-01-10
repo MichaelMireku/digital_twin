@@ -1,0 +1,81 @@
+<svg width="900" height="850" xmlns="http://www.w3.org/2000/svg" style="background-color: #ffffff; border: 1px solid #cccccc; font-family: Arial, sans-serif;">
+
+  <title>Area D Schematic - Fuel Depot</title>
+
+  <defs>
+    <style>
+      .main-title { font-size: 22px; font-weight: bold; text-anchor: middle; fill: #000000; }
+      .area-group-title { font-size: 18px; font-weight: bold; text-anchor: middle; fill: #2c3e50; }
+      /* Rental tanks - using distinct colors, can be adjusted */
+      .tank-rect-ago-rental { fill: #aed6f1; stroke: #5dade2; stroke-width: 1.5; rx:5; ry:5;} /* Lighter variant Blue for AGO Rental */
+      .tank-rect-pms-rental { fill: #f5b7b1; stroke: #e74c3c; stroke-width: 1.5; rx:5; ry:5;} /* Lighter variant Red for PMS Rental */
+      .tank-label { font-size: 11px; fill: #17202a; text-anchor: middle; dominant-baseline: central; pointer-events: none;}
+      
+      .bond-wall { fill: none; stroke: #aeb6bf; stroke-width: 2.5; stroke-dasharray: 10,5; rx:10; ry:10;}
+
+      .pipeline-header { stroke: #212f3d; stroke-width: 3; fill: none; } 
+      .pipeline-return-header { stroke: #d35400; stroke-width: 3; fill: none; } 
+      .pipeline-pms-header { stroke: #c0392b; stroke-width: 3; fill: none; } 
+      .pipeline-pms-return-header { stroke: #c0392b; stroke-width: 3; fill: none; }
+      .pipeline-branch { stroke: #566573; stroke-width: 2; fill: none; }
+      .pipeline-hydrant-main { stroke: #0000FF; stroke-width: 2.5; fill: none; stroke-dasharray: 8,4; } 
+      .pipeline-hydrant-branch { stroke: #3498db; stroke-width: 1.5; fill: none; stroke-dasharray: 6,3; }
+      .pipeline-drainage-main { stroke: #7f8c8d; stroke-width: 2.5; fill: none; }
+      .pipeline-drainage-branch { stroke: #95a5a6; stroke-width: 1.5; fill: none; stroke-dasharray: 5,3; }
+      .pipeline-label { font-size: 9px; fill: #34495e; text-anchor: middle; dominant-baseline:auto; pointer-events: none; }
+    </style>
+    <marker id="arrow-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#212f3d"/>
+    </marker>
+    <marker id="arrow-d-pms" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#c0392b"/>
+    </marker>
+     <marker id="arrow-d-return" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#d35400"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="40" class="main-title">AREA D - DEPOT SCHEMATIC (Rental)</text>
+
+  <g id="area-d-agd-section">
+    <text x="450" y="80" class="area-group-title">AREA D AGO (Rental)</text>
+    <rect x="50" y="100" width="800" height="230" class="bond-wall"/>
+
+    <rect id="TANK_5802" x="150" y="150" width="220" height="120" class="tank-rect-ago-rental"/>
+    <text x="260" y="205" class="tank-label">TANK 5802</text>
+    <line x1="50" y1="170" x2="150" y2="170" class="pipeline-header" marker-end="url(#arrow-d)"/> <text x="90" y="160" class="pipeline-label">INLET</text>
+    <line x1="150" y1="230" x2="50" y2="230" class="pipeline-header" marker-start="url(#arrow-d)"/> <text x="90" y="240" class="pipeline-label">OUTLET</text>
+    <line x1="370" y1="210" x2="420" y2="210" class="pipeline-return-header" marker-end="url(#arrow-d-return)"/> <text x="390" y="200" class="pipeline-label">RETURN</text>
+    <line x1="260" y1="270" x2="260" y2="290" class="pipeline-drainage-branch"/> <path d="M 260 290 L 250 300 L 270 300 Z" fill="#7f8c8d"/>
+
+
+    <rect id="TANK_5801" x="530" y="150" width="220" height="120" class="tank-rect-ago-rental"/>
+    <text x="640" y="205" class="tank-label">TANK 5801</text>
+    <line x1="480" y1="170" x2="530" y2="170" class="pipeline-header" marker-end="url(#arrow-d)"/> <line x1="530" y1="230" x2="480" y2="230" class="pipeline-header" marker-start="url(#arrow-d)"/> <line x1="750" y1="210" x2="800" y2="210" class="pipeline-return-header" marker-end="url(#arrow-d-return)"/> <line x1="640" y1="270" x2="640" y2="290" class="pipeline-drainage-branch"/> <path d="M 640 290 L 630 300 L 650 300 Z" fill="#7f8c8d"/>
+  </g>
+
+  <line x1="50" y1="350" x2="850" y2="350" stroke="#aeb6bf" stroke-width="1.5"/>
+
+  <g id="area-d-pms-section">
+    <text x="450" y="390" class="area-group-title">AREA D PMS (Rental)</text>
+    <rect x="50" y="410" width="800" height="230" class="bond-wall"/>
+
+    <rect id="TANK_5804" x="150" y="460" width="220" height="120" class="tank-rect-pms-rental"/>
+    <text x="260" y="515" class="tank-label">TANK 5804</text>
+    <line x1="50" y1="480" x2="150" y2="480" class="pipeline-pms-header" marker-end="url(#arrow-d-pms)"/> <text x="90" y="470" class="pipeline-label" fill="#c0392b">INLET</text>
+    <line x1="150" y1="540" x2="50" y2="540" class="pipeline-pms-header" marker-start="url(#arrow-d-pms)"/> <text x="90" y="550" class="pipeline-label" fill="#c0392b">OUTLET</text>
+    <line x1="370" y1="520" x2="420" y2="520" class="pipeline-pms-return-header" marker-end="url(#arrow-d-return)"/> <text x="390" y="510" class="pipeline-label" fill="#c0392b">RETURN</text>
+    <line x1="260" y1="580" x2="260" y2="600" class="pipeline-drainage-branch"/> <path d="M 260 600 L 250 610 L 270 610 Z" fill="#7f8c8d"/>
+
+    <rect id="TANK_5803" x="530" y="460" width="220" height="120" class="tank-rect-pms-rental"/>
+    <text x="640" y="515" class="tank-label">TANK 5803</text>
+    <line x1="480" y1="480" x2="530" y2="480" class="pipeline-pms-header" marker-end="url(#arrow-d-pms)"/> <line x1="530" y1="540" x2="480" y2="540" class="pipeline-pms-header" marker-start="url(#arrow-d-pms)"/> <line x1="750" y1="520" x2="800" y2="520" class="pipeline-pms-return-header" marker-end="url(#arrow-d-return)"/> <line x1="640" y1="580" x2="640" y2="600" class="pipeline-drainage-branch"/> <path d="M 640 600 L 630 610 L 650 610 Z" fill="#7f8c8d"/>
+  </g>
+
+  <g id="common-utility-lines-d">
+    <line x1="30" y1="700" x2="870" y2="700" class="pipeline-hydrant-main"/>
+    <text x="450" y="690" class="pipeline-label" fill="#0000FF">HYDRANT MAIN</text>
+    <line x1="250" y1="330" x2="250" y2="700" class="pipeline-hydrant-branch"/> <line x1="650" y1="330" x2="650" y2="700" class="pipeline-hydrant-branch"/> <line x1="250" y1="640" x2="250" y2="700" class="pipeline-hydrant-branch"/> <line x1="650" y1="640" x2="650" y2="700" class="pipeline-hydrant-branch"/> <line x1="30" y1="730" x2="870" y2="730" class="pipeline-drainage-main"/>
+    <text x="450" y="720" class="pipeline-label" fill="#7f8c8d">DRAINAGE MAIN (AREA D)</text>
+    </g>
+</svg>
