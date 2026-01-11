@@ -27,8 +27,7 @@ except Exception as e:
 # --- API Configuration ---
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
-    logger.critical("API_KEY is not set. The API will not be accessible. Please set it in your .env file or as an environment variable.")
-    sys.exit(1)
+    logger.warning("API_KEY is not set. The API will not be accessible without it.")
 
 
 # --- MQTT Configuration ---
