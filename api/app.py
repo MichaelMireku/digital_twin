@@ -326,6 +326,106 @@ def refresh_sensor_data():
         logger.error(f"Error refreshing sensor data: {e}", exc_info=True)
         abort(500, description="Failed to refresh sensor data")
 
+
+@app.route('/api/v1/pumps/costs', methods=['GET'])
+@require_api_key
+def get_pump_operating_costs():
+    """
+    Get pump operating costs summary.
+    Query params:
+      - start_time: ISO datetime (optional, defaults to last 24 hours)
+      - end_time: ISO datetime (optional, defaults to now)
+      - pump_id: specific pump ID (optional, returns all pumps if not specified)
+    """
+    from sqlalchemy import text
+    
+    try:
+        with db_session_scope() as db:
+            # Parse time range
+            end_time = request.args.get('end_time')
+            start_time = request.args.get('start_time')
+            pump_id = request.args.get('pump_id')
+            
+            if end_time:
+                end_time = parse_iso_datetime(end_time)
+            else:
+                end_time = datetime.datetime.now(datetime.timezone.utc)
+            
+            if start_time:
+                start_time = parse_iso_datetime(start_time)
+            else:
+                start_time = end_time - datetime.timedelta(hours=24)
+            
+            # Build query for aggregated pump costs
+            query = """
+                SELECT 
+                    cd.asset_id,
+                    a.description,
+                    a.motor_power_kw,
+                    a.pump_house_id,
+                    SUM(CASE WHEN cd.metric_name = 'energy_kwh' THEN cd.value ELSE 0 END) as total_energy_kwh,
+                    SUM(CASE WHEN cd.metric_name = 'operating_cost' THEN cd.value ELSE 0 END) as total_cost,
+                    COUNT(CASE WHEN cd.metric_name = 'power_kw' AND cd.value > 0 THEN 1 END) as running_intervals,
+                    COUNT(CASE WHEN cd.metric_name = 'power_kw' THEN 1 END) as total_intervals
+                FROM calculated_data cd
+                JOIN assets a ON cd.asset_id = a.asset_id
+                WHERE a.asset_type = 'Pump'
+                  AND cd.time >= :start_time
+                  AND cd.time <= :end_time
+                  AND cd.metric_name IN ('energy_kwh', 'operating_cost', 'power_kw')
+            """
+            
+            params = {"start_time": start_time, "end_time": end_time}
+            
+            if pump_id:
+                query += " AND cd.asset_id = :pump_id"
+                params["pump_id"] = pump_id
+            
+            query += " GROUP BY cd.asset_id, a.description, a.motor_power_kw, a.pump_house_id ORDER BY total_cost DESC"
+            
+            result = db.execute(text(query), params)
+            rows = result.fetchall()
+            
+            pumps_data = []
+            total_energy = 0
+            total_cost = 0
+            
+            for row in rows:
+                running_pct = (row[6] / row[7] * 100) if row[7] > 0 else 0
+                pump_data = {
+                    "asset_id": row[0],
+                    "description": row[1],
+                    "motor_power_kw": float(row[2]) if row[2] else None,
+                    "pump_house_id": row[3],
+                    "total_energy_kwh": round(float(row[4]), 2),
+                    "total_cost_ghs": round(float(row[5]), 2),
+                    "runtime_percentage": round(running_pct, 1)
+                }
+                pumps_data.append(pump_data)
+                total_energy += float(row[4])
+                total_cost += float(row[5])
+            
+            return jsonify({
+                "time_range": {
+                    "start": start_time.isoformat(),
+                    "end": end_time.isoformat()
+                },
+                "tariff": {
+                    "rate_per_kwh": 1.6135,
+                    "currency": "GHS",
+                    "description": "Ghana ECG Non-Residential (1000+ kWh band, incl. VAT)"
+                },
+                "summary": {
+                    "total_energy_kwh": round(total_energy, 2),
+                    "total_cost_ghs": round(total_cost, 2),
+                    "pump_count": len(pumps_data)
+                },
+                "pumps": pumps_data
+            })
+    except Exception as e:
+        logger.error(f"Error getting pump costs: {e}", exc_info=True)
+        abort(500, description="Failed to retrieve pump operating costs")
+
 # --- Main Execution Block ---
 if __name__ == '__main__':
     port = int(os.environ.get("FLASK_PORT", 5000))

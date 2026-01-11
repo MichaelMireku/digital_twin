@@ -490,5 +490,5 @@ class EnergyBalanceCalculator:
             "energy_cost": round(energy_cost, 2),
             "demand_cost": round(demand_cost, 2),
             "total_daily_cost": round(total_cost, 2),
-            "currency": "USD"  # US Dollars
+            "currency": "GHS"  # Ghana Cedi
         }

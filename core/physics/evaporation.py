@@ -113,7 +113,7 @@ class AnnualLossReport:
     working_loss_kg: float
     monthly_breakdown: List[Dict]
     economic_loss_value: Optional[float] = None
-    currency: str = "USD"
+    currency: str = "GHS"
     
     def to_dict(self) -> dict:
         return {
@@ -491,7 +491,7 @@ class EvaporationCalculator:
         logger.info(
             f"Annual evaporation loss for {tank_diameter_m}m {product_type} tank: "
             f"{total_loss_kg:,.0f} kg ({total_loss_litres:,.0f} L), "
-            f"Economic value: {economic_loss:,.0f} USD"
+            f"Economic value: {economic_loss:,.0f} GHS"
         )
         
         return AnnualLossReport(
@@ -501,5 +501,5 @@ class EvaporationCalculator:
             working_loss_kg=total_working,
             monthly_breakdown=monthly_breakdown,
             economic_loss_value=economic_loss,
-            currency="USD"
+            currency="GHS"
         )

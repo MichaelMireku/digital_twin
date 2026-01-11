@@ -37,27 +37,30 @@ INSERT INTO assets (asset_id, asset_type, area, product_service, description) VA
 ('PH-C01', 'PumpHouse', 'C', 'PMS/AGO', 'Zone C Main Pump House');
 
 -- Pumps (Updated to match pump house configuration)
--- Added flow_rate_lpm column for tank transfer simulation
+-- Added columns for pump power specs
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS flow_rate_lpm NUMERIC;
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS motor_power_kw NUMERIC;
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS motor_voltage_v NUMERIC DEFAULT 415;
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS motor_efficiency NUMERIC DEFAULT 0.85;
 
-INSERT INTO assets (asset_id, asset_type, pump_house_id, product_service, pump_service_description, description, flow_rate_lpm) VALUES 
--- Zone A Pumps (PH-A01) - High capacity loading/transfer pumps
-('PP-A01', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 01', 3000),
-('PP-A02', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 02', 3000),
-('PP-A03', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 03', 3000),
-('PP-A04', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 01', 2500),
-('PP-A05', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 02', 2500),
-('PP-A06', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 03', 2500),
--- Zone B Pumps (PH-B01) - Transfer pumps
-('PP-B01', 'Pump', 'PH-B01', 'Gasoil (AGO)', 'Transfer', 'Zone B AGO Transfer Pump 01', 2000),
-('PP-B02', 'Pump', 'PH-B01', 'Gasoil (AGO)', 'Transfer', 'Zone B AGO Transfer Pump 02', 2000),
--- Zone C Pumps (PH-C01) - Gantry feed pumps
-('PP-C01', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed', 'Zone C AGO Pump 01', 1500),
-('PP-C02', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed', 'Zone C AGO Pump 02', 1500),
-('PP-C03', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed/Transfer', 'Zone C AGO Pump 03', 2000),
-('PP-C04', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed', 'Zone C PMS Pump 01', 1800),
-('PP-C05', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed', 'Zone C PMS Pump 02', 1800),
-('PP-C06', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed/Transfer', 'Zone C PMS Pump 03', 2200);
+INSERT INTO assets (asset_id, asset_type, pump_house_id, product_service, pump_service_description, description, flow_rate_lpm, motor_power_kw, is_active) VALUES 
+-- Zone A Pumps (PH-A01) - High capacity loading/transfer pumps (75-90kW motors)
+('PP-A01', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 01', 3000, 90, TRUE),
+('PP-A02', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 02', 3000, 90, TRUE),
+('PP-A03', 'Pump', 'PH-A01', 'Gasoline (PMS)', 'Loading/Transfer', 'Zone A PMS Pump 03', 3000, 90, TRUE),
+('PP-A04', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 01', 2500, 75, TRUE),
+('PP-A05', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 02', 2500, 75, TRUE),
+('PP-A06', 'Pump', 'PH-A01', 'Gasoil (AGO)', 'Loading/Transfer', 'Zone A AGO Pump 03', 2500, 75, TRUE),
+-- Zone B Pumps (PH-B01) - Transfer pumps (55kW motors)
+('PP-B01', 'Pump', 'PH-B01', 'Gasoil (AGO)', 'Transfer', 'Zone B AGO Transfer Pump 01', 2000, 55, TRUE),
+('PP-B02', 'Pump', 'PH-B01', 'Gasoil (AGO)', 'Transfer', 'Zone B AGO Transfer Pump 02', 2000, 55, TRUE),
+-- Zone C Pumps (PH-C01) - Gantry feed pumps (37-55kW motors)
+('PP-C01', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed', 'Zone C AGO Pump 01', 1500, 37, TRUE),
+('PP-C02', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed', 'Zone C AGO Pump 02', 1500, 37, TRUE),
+('PP-C03', 'Pump', 'PH-C01', 'Gasoil (AGO)', 'Gantry Feed/Transfer', 'Zone C AGO Pump 03', 2000, 55, TRUE),
+('PP-C04', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed', 'Zone C PMS Pump 01', 1800, 45, TRUE),
+('PP-C05', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed', 'Zone C PMS Pump 02', 1800, 45, TRUE),
+('PP-C06', 'Pump', 'PH-C01', 'Gasoline (PMS)', 'Gantry Feed/Transfer', 'Zone C PMS Pump 03', 2200, 55, TRUE);
 
 -- Loading Gantries (6 lanes as per blender generator)
 INSERT INTO assets (asset_id, asset_type, area, description) VALUES

@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS assets (
     notes TEXT,
     foam_system_present BOOLEAN DEFAULT FALSE,
     flow_rate_lpm NUMERIC,  -- Pump flow rate in litres per minute
+    motor_power_kw NUMERIC, -- Pump motor power in kilowatts
+    motor_voltage_v NUMERIC DEFAULT 415, -- Motor voltage (typically 415V 3-phase)
+    motor_efficiency NUMERIC DEFAULT 0.85, -- Motor efficiency factor
     high_level_threshold_m NUMERIC,
     low_level_threshold_m NUMERIC,
     high_high_level_threshold_m NUMERIC,

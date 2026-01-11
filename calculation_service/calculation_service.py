@@ -23,6 +23,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("CalculationService")
 
 class CalculationService:
+    # Ghana ECG Non-Residential Tariffs (Effective 1st May 2025)
+    # For industrial depot with high consumption (1000+ kWh/month)
+    # From tariff table - using 1000 kWh row values for non-residential
+    ENERGY_CHARGE_PER_KWH = float(os.environ.get('ENERGY_CHARGE_PER_KWH', 1.59))    # GHS/kWh
+    SERVICE_CHARGE_PER_KWH = float(os.environ.get('SERVICE_CHARGE_PER_KWH', 0.05))   # GHS/kWh (street light)
+    NHIL_GETFUND_PER_KWH = float(os.environ.get('NHIL_GETFUND_PER_KWH', 0.1243))     # GHS/kWh
+    VAT_RATE = float(os.environ.get('VAT_RATE', 0.15))  # 15%
+    
+    # Base rate before VAT: ~1.7643 GHS/kWh
+    # With VAT: ~2.03 GHS/kWh
+    # Or use simplified total from table (~2.21 GHS/kWh for 1000kWh band)
+    ELECTRICITY_RATE_PER_KWH = float(os.environ.get(
+        'ELECTRICITY_RATE_PER_KWH',
+        2.21  # GHS/kWh - approximate from 1000kWh non-residential band
+    ))
+    
     def __init__(self, interval_seconds: int = 30):
         self.interval = interval_seconds
         self.volume_calculator = VolumeCalculator()
@@ -30,6 +46,7 @@ class CalculationService:
         self.mass_calculator = MassBalanceCalculator(reference_temp_c=20.0)
         self.energy_calculator = EnergyBalanceCalculator(reference_temp_c=0.0)
         logger.info(f"Calculation Service initialized with Physics Engine. Run interval: {self.interval} seconds.")
+        logger.info(f"Ghana ECG Tariff: {self.ELECTRICITY_RATE_PER_KWH:.2f} GHS/kWh (Non-Residential, incl. VAT)")
 
     def run_cycle(self):
         logger.info("--- Starting new calculation cycle ---")
@@ -40,7 +57,9 @@ class CalculationService:
 
             all_assets, _ = database.get_all_asset_metadata_paginated(db, per_page=1000)
             tanks = [asset for asset in all_assets if asset.get('asset_type') == 'StorageTank']
-            logger.info(f"Found {len(tanks)} storage tanks to process.")
+            pumps = [asset for asset in all_assets if asset.get('asset_type') == 'Pump']
+            
+            logger.info(f"Found {len(tanks)} storage tanks and {len(pumps)} pumps to process.")
 
             for tank_meta in tanks:
                 asset_id = tank_meta['asset_id']
@@ -48,6 +67,14 @@ class CalculationService:
                     self.process_tank(db, asset_id, tank_meta)
                 except Exception as e:
                     logger.error(f"[FATAL] Failed to process tank {asset_id}: {e}", exc_info=True)
+            
+            for pump_meta in pumps:
+                asset_id = pump_meta['asset_id']
+                try:
+                    self.process_pump(db, asset_id, pump_meta)
+                except Exception as e:
+                    logger.error(f"[FATAL] Failed to process pump {asset_id}: {e}", exc_info=True)
+                    
         logger.info("--- Calculation cycle finished ---")
 
     def process_tank(self, db, asset_id: str, tank_meta: Dict[str, Any]):
@@ -132,6 +159,62 @@ class CalculationService:
                             unit='kJ', calculation_status='OK'
                         )
                         logger.info(f"Calculated heat_content for {asset_id}: {heat_result.energy_kj:,.0f} kJ")
+
+    def process_pump(self, db, asset_id: str, pump_meta: Dict[str, Any]):
+        """
+        Process pump sensor data to calculate energy consumption and operating cost.
+        Reads pump_status sensor to determine runtime and calculates cost from power specs.
+        """
+        # Get latest pump status reading
+        latest_status = database.get_latest_sensor_reading(db, asset_id, 'pump_status')
+        if not latest_status:
+            logger.debug(f"No pump_status reading for pump {asset_id}. Skipping.")
+            return
+        
+        # Check if we already calculated for this reading
+        last_calc_time = database.get_latest_calculated_data(db, asset_id, 'energy_kwh')
+        if last_calc_time and last_calc_time['time'] >= latest_status['time']:
+            logger.debug(f"Calculations for pump {asset_id} are already up-to-date.")
+            return
+        
+        is_running = latest_status.get('value', 0) == 1
+        motor_power_kw = float(pump_meta.get('motor_power_kw') or 55)  # Default 55kW
+        motor_efficiency = float(pump_meta.get('motor_efficiency') or 0.85)
+        
+        # Calculate actual power draw (accounting for efficiency losses)
+        actual_power_kw = motor_power_kw / motor_efficiency if is_running else 0.0
+        
+        # Save instantaneous power reading
+        database.save_calculated_data(
+            db, time=latest_status['time'], asset_id=asset_id,
+            metric_name='power_kw', value=round(actual_power_kw, 2),
+            unit='kW', calculation_status='OK'
+        )
+        
+        # Calculate energy consumption over the interval (kWh)
+        # Interval is in seconds, convert to hours
+        interval_hours = self.interval / 3600.0
+        energy_kwh = actual_power_kw * interval_hours
+        
+        database.save_calculated_data(
+            db, time=latest_status['time'], asset_id=asset_id,
+            metric_name='energy_kwh', value=round(energy_kwh, 4),
+            unit='kWh', calculation_status='OK'
+        )
+        
+        # Calculate operating cost for this interval
+        operating_cost = energy_kwh * self.ELECTRICITY_RATE_PER_KWH
+        
+        database.save_calculated_data(
+            db, time=latest_status['time'], asset_id=asset_id,
+            metric_name='operating_cost', value=round(operating_cost, 4),
+            unit='GHS', calculation_status='OK'
+        )
+        
+        if is_running:
+            logger.info(f"Pump {asset_id}: Running at {actual_power_kw:.1f}kW, energy={energy_kwh:.4f}kWh, cost={operating_cost:.4f} GHS")
+        else:
+            logger.debug(f"Pump {asset_id}: Stopped")
 
     def start(self):
         logger.info("Calculation Service is starting...")

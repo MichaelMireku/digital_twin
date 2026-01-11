@@ -1701,7 +1701,7 @@ def update_all_components(data, fire_sim_results):
             inventory_by_product[product] = inventory_by_product.get(product, 0) + volume
         
         inv_value = sum(vol * PRODUCT_PRICING.get(prod.split()[0] if prod else 'Default', PRODUCT_PRICING['Default']) for prod, vol in inventory_by_product.items())
-        active_pumps = sum(1 for a in assets if a.get('asset_type') == 'Pump' and a.get('is_active'))
+        active_pumps = sum(1 for a in assets if a.get('asset_type') == 'Pump' and a.get('is_active', True) is not False)
         total_pumps = sum(1 for a in assets if a.get('asset_type') == 'Pump')
         
         daily_kwh = active_pumps * PUMP_POWER_KW * ESTIMATED_DAILY_HOURS_PER_PUMP
@@ -1713,8 +1713,8 @@ def update_all_components(data, fire_sim_results):
         kpi_pumps = build_kpi_card("Active Pumps", f"{active_pumps}/{total_pumps}", "", "fa-gauge-high", "#f59e0b")
         kpi_throughput = build_kpi_card("Daily Throughput", "10.1", "M Litres", "fa-truck-fast", "#8b5cf6")
         
-        kpi_value = build_kpi_card("Inventory Value", format_large_number(inv_value, prefix="$"), "", "fa-dollar-sign", "#10b981")
-        kpi_cost = build_kpi_card("Daily Op. Cost", f"${daily_electricity_cost:,.0f}", "", "fa-bolt", "#f59e0b")
+        kpi_value = build_kpi_card("Inventory Value", format_large_number(inv_value, prefix="₵"), "", "fa-cedi-sign", "#10b981")
+        kpi_cost = build_kpi_card("Daily Op. Cost", f"₵{daily_electricity_cost:,.0f}", "", "fa-bolt", "#f59e0b")
         kpi_efficiency = build_kpi_card("Efficiency", "94.2%", "", "fa-chart-line", "#3b82f6")
         
         # Alerts
