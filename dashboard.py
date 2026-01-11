@@ -1330,7 +1330,7 @@ def build_simulation_sandbox_layout():
                         html.Label([
                             html.I(className="fas fa-arrow-right-from-bracket me-2", style={"color": "#ef4444"}),
                             "Source Tank"
-                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        ], style={"color": "#111827", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
                         dcc.Dropdown(
                             id='sim-source-tank-dropdown', 
                             placeholder="Select source tank...", 
@@ -1344,7 +1344,7 @@ def build_simulation_sandbox_layout():
                         html.Label([
                             html.I(className="fas fa-arrow-right-to-bracket me-2", style={"color": "#10b981"}),
                             "Destination Tank"
-                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        ], style={"color": "#111827", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
                         dcc.Dropdown(
                             id='sim-dest-tank-dropdown', 
                             placeholder="Select destination tank...", 
@@ -1358,7 +1358,7 @@ def build_simulation_sandbox_layout():
                         html.Label([
                             html.I(className="fas fa-gauge-high me-2", style={"color": "#f59e0b"}),
                             "Transfer Pump"
-                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        ], style={"color": "#111827", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
                         dcc.Dropdown(
                             id='sim-pump-dropdown', 
                             placeholder="Select pump...", 
@@ -1388,13 +1388,13 @@ def build_simulation_sandbox_layout():
                             html.Div([
                                 html.Div([
                                     html.Div([
-                                        html.I(className="fas fa-flask", style={"fontSize": "2.5rem", "color": "#374151"})
+                                        html.I(className="fas fa-flask", style={"fontSize": "2.5rem", "color": "#9ca3af"})
                                     ], style={
                                         "width": "80px", "height": "80px", "borderRadius": "50%",
-                                        "background": "rgba(55, 65, 81, 0.3)", "display": "flex",
+                                        "background": "#f3f4f6", "display": "flex",
                                         "alignItems": "center", "justifyContent": "center", "margin": "0 auto 1.5rem"
                                     }),
-                                    html.H5("Ready to Simulate", style={"color": "#9ca3af", "fontWeight": "600", "marginBottom": "0.5rem"}),
+                                    html.H5("Ready to Simulate", style={"color": "#4b5563", "fontWeight": "600", "marginBottom": "0.5rem"}),
                                     html.P("Select source tank, destination tank, and pump to run a transfer simulation.",
                                            style={"color": "#6b7280", "fontSize": "0.9rem", "maxWidth": "400px", "margin": "0 auto", "lineHeight": "1.6"})
                                 ], className="text-center py-5")
