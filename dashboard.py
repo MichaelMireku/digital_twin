@@ -607,7 +607,18 @@ def get_api_data(endpoint: str, payload: dict = None, method: str = 'GET') -> di
         logger.error(f"API call to {endpoint} failed: {e}")
         return {}
 
+# Weather cache to avoid rate limiting
+_weather_cache = {"data": None, "timestamp": 0}
+WEATHER_CACHE_TTL = 300  # 5 minutes
+
 def fetch_weather_data():
+    import time
+    current_time = time.time()
+    
+    # Return cached data if still valid
+    if _weather_cache["data"] and (current_time - _weather_cache["timestamp"]) < WEATHER_CACHE_TTL:
+        return _weather_cache["data"]
+    
     url = f"https://api.open-meteo.com/v1/forecast?latitude={LATITUDE}&longitude={LONGITUDE}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m"
     try:
         response = requests.get(url, timeout=10)
@@ -615,15 +626,22 @@ def fetch_weather_data():
         data = response.json().get('current', {})
         description = get_weather_description(data.get('weather_code'))
         icon = get_weather_icon(data.get('weather_code'))
-        return {
+        result = {
             "description": description,
             "temp": f"{data.get('temperature_2m', ''):.1f}",
             "wind_speed": f"{data.get('wind_speed_10m', ''):.1f}",
             "humidity": f"{data.get('relative_humidity_2m', '')}",
             "icon": icon
         }
+        # Update cache
+        _weather_cache["data"] = result
+        _weather_cache["timestamp"] = current_time
+        return result
     except requests.exceptions.RequestException as e:
         logger.error(f"Public weather API call failed: {e}")
+        # Return cached data if available, otherwise fallback
+        if _weather_cache["data"]:
+            return _weather_cache["data"]
         return {"description": "Unavailable", "temp": "--", "wind_speed": "--", "humidity": "--", "icon": "fa-cloud-question"}
 
 def get_weather_description(code):
