@@ -664,6 +664,18 @@ def get_weather_icon(code):
     return icons.get(code, "fa-cloud")
 
 
+def format_large_number(value, prefix="", suffix=""):
+    """Format large numbers with K, M, B suffixes."""
+    if value >= 1e9:
+        return f"{prefix}{value/1e9:.2f}B{suffix}"
+    elif value >= 1e6:
+        return f"{prefix}{value/1e6:.2f}M{suffix}"
+    elif value >= 1e3:
+        return f"{prefix}{value/1e3:.2f}K{suffix}"
+    else:
+        return f"{prefix}{value:.2f}{suffix}"
+
+
 # --- UI Component Builders ---
 def build_kpi_card(title, value, unit, icon, bg_color, trend=None, trend_value=None, subtitle=None):
     """Build a professional KPI card with icon, trend indicator, and optional subtitle."""
@@ -1701,7 +1713,7 @@ def update_all_components(data, fire_sim_results):
         kpi_pumps = build_kpi_card("Active Pumps", f"{active_pumps}/{total_pumps}", "", "fa-gauge-high", "#f59e0b")
         kpi_throughput = build_kpi_card("Daily Throughput", "10.1", "M Litres", "fa-truck-fast", "#8b5cf6")
         
-        kpi_value = build_kpi_card("Inventory Value", f"${inv_value/1e6:.2f}M", "", "fa-dollar-sign", "#10b981")
+        kpi_value = build_kpi_card("Inventory Value", format_large_number(inv_value, prefix="$"), "", "fa-dollar-sign", "#10b981")
         kpi_cost = build_kpi_card("Daily Op. Cost", f"${daily_electricity_cost:,.0f}", "", "fa-bolt", "#f59e0b")
         kpi_efficiency = build_kpi_card("Efficiency", "94.2%", "", "fa-chart-line", "#3b82f6")
         
