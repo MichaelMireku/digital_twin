@@ -86,7 +86,24 @@ def get_all_assets():
     with db_session_scope() as db:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 500, type=int)
+        include_state = request.args.get('include_state', 'true').lower() == 'true'
+        
         assets, total = database.get_all_asset_metadata_paginated(db, page, per_page)
+        
+        # Include latest dynamic state for each asset (needed for dashboard)
+        if include_state:
+            for asset in assets:
+                metrics_config = {}
+                if asset.get('asset_type') == 'StorageTank':
+                    metrics_config = {'level_percentage': 'sensor', 'temperature': 'sensor', 'volume_gov': 'calculated', 'volume_gsv': 'calculated'}
+                elif asset.get('asset_type') == 'Pump':
+                    metrics_config = {'flow_rate': 'sensor', 'pressure': 'sensor'}
+                
+                if metrics_config:
+                    latest_state = database.get_latest_readings_for_asset(db, asset['asset_id'], metrics_config)
+                    # Ensure None values are converted to empty dicts for safe access
+                    asset['latest_dynamic_state'] = {k: (v if v is not None else {}) for k, v in latest_state.items()}
+        
         return jsonify({"assets": assets, "total": total, "page": page, "per_page": per_page})
 
 @app.route('/api/v1/assets/<string:asset_id>', methods=['GET'])
@@ -99,7 +116,9 @@ def get_asset_details(asset_id):
         if metadata.get('asset_type') == 'StorageTank':
             metrics_config = {'level_percentage': 'sensor', 'temperature': 'sensor', 'volume_gov': 'calculated', 'volume_gsv': 'calculated'}
         latest_state = database.get_latest_readings_for_asset(db, asset_id, metrics_config)
-        return jsonify({**metadata, "latest_dynamic_state": latest_state})
+        # Ensure None values are converted to empty dicts for safe access
+        safe_state = {k: (v if v is not None else {}) for k, v in latest_state.items()}
+        return jsonify({**metadata, "latest_dynamic_state": safe_state})
 
 @app.route('/api/v1/assets/<string:asset_id>/metrics/<string:metric_name>/history', methods=['GET'])
 @require_api_key
