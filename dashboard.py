@@ -54,37 +54,33 @@ CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #3b82f6;
-    --primary-light: #60a5fa;
-    --primary-dark: #2563eb;
-    --accent: #8b5cf6;
-    --success: #10b981;
-    --success-light: #34d399;
+    --primary: #000000;
+    --primary-light: #333333;
+    --primary-dark: #000000;
+    --accent: #555555;
+    --success: #22c55e;
+    --success-light: #4ade80;
     --warning: #f59e0b;
     --warning-light: #fbbf24;
     --danger: #ef4444;
     --danger-light: #f87171;
-    --dark-bg: #0a0f1a;
-    --card-bg: #111827;
-    --card-bg-hover: #1f2937;
-    --card-border: #1f2937;
-    --card-border-hover: #374151;
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --card-bg: #ffffff;
+    --card-bg-hover: #f8f9fa;
+    --card-border: #e5e7eb;
+    --card-border-hover: #d1d5db;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 * {
     scrollbar-width: thin;
-    scrollbar-color: #374151 #111827;
+    scrollbar-color: #d1d5db #f3f4f6;
 }
 
 *::-webkit-scrollbar {
@@ -93,36 +89,34 @@ CUSTOM_CSS = """
 }
 
 *::-webkit-scrollbar-track {
-    background: #111827;
+    background: #f3f4f6;
     border-radius: 3px;
 }
 
 *::-webkit-scrollbar-thumb {
-    background: #374151;
+    background: #d1d5db;
     border-radius: 3px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: #4b5563;
+    background: #9ca3af;
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    background: var(--dark-bg) !important;
+    background: var(--bg-secondary) !important;
     min-height: 100vh;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Professional Navbar */
+/* Clean Navbar */
 .navbar {
-    background: rgba(17, 24, 39, 0.95) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: #ffffff !important;
+    border-bottom: 1px solid var(--card-border);
     padding: 0.875rem 2rem !important;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -136,76 +130,43 @@ body {
 }
 
 .navbar-brand i {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #000000;
 }
 
-/* Enhanced KPI Cards */
+/* Clean KPI Cards */
 .kpi-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 1.5rem;
     height: 100%;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--gradient-primary);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .kpi-card:hover {
     border-color: var(--card-border-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
-
-.kpi-card:hover::before {
-    opacity: 1;
+    box-shadow: var(--shadow-md);
 }
 
 .kpi-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     margin-bottom: 1rem;
     color: #fff;
-    box-shadow: var(--shadow-md);
-    position: relative;
-}
-
-.kpi-icon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-    background: inherit;
-    filter: blur(12px);
-    opacity: 0.4;
-    z-index: -1;
 }
 
 .kpi-value {
     font-size: 2rem;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.25rem;
     letter-spacing: -0.025em;
     line-height: 1.2;
 }
@@ -214,7 +175,7 @@ body {
     font-size: 0.75rem;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.75px;
+    letter-spacing: 0.5px;
     font-weight: 500;
 }
 
@@ -229,12 +190,12 @@ body {
 }
 
 .kpi-trend.trend-up {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(34, 197, 94, 0.1);
     color: var(--success);
 }
 
 .kpi-trend.trend-down {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: var(--danger);
 }
 
@@ -242,9 +203,9 @@ body {
 .glass-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 1.5rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
 }
 
 .glass-card:hover {
@@ -267,14 +228,14 @@ body {
     content: '';
     width: 4px;
     height: 20px;
-    background: var(--gradient-primary);
+    background: #000000;
     border-radius: 2px;
 }
 
 /* Alert Items */
 .alert-item {
-    background: rgba(31, 41, 55, 0.5);
-    border-radius: 12px;
+    background: var(--bg-secondary);
+    border-radius: 10px;
     padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
     border-left: 4px solid;
@@ -282,54 +243,40 @@ body {
 }
 
 .alert-item:hover {
-    background: rgba(31, 41, 55, 0.8);
-    transform: translateX(4px);
+    background: #f3f4f6;
 }
 
 .alert-critical { border-left-color: var(--danger); }
 .alert-warning { border-left-color: var(--warning); }
-.alert-info { border-left-color: var(--primary); }
+.alert-info { border-left-color: #000000; }
 
 /* Weather Widget */
 .weather-widget {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
-    border-radius: 16px;
+    background: #000000;
+    border-radius: 12px;
     padding: 1.5rem;
     color: #fff;
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
-}
-
-.weather-widget::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    pointer-events: none;
 }
 
 .weather-temp {
-    font-size: 2.75rem;
-    font-weight: 800;
+    font-size: 2.5rem;
+    font-weight: 700;
     letter-spacing: -0.025em;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .weather-desc {
     font-size: 0.9rem;
-    opacity: 0.95;
+    opacity: 0.9;
     font-weight: 500;
 }
 
 /* Status Badges */
 .status-badge {
     padding: 0.3rem 0.75rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -337,63 +284,61 @@ body {
 }
 
 .status-online { 
-    background: rgba(16, 185, 129, 0.15); 
+    background: rgba(34, 197, 94, 0.1); 
     color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .status-offline { 
-    background: rgba(239, 68, 68, 0.15); 
+    background: rgba(239, 68, 68, 0.1); 
     color: var(--danger);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .status-warning { 
-    background: rgba(245, 158, 11, 0.15); 
+    background: rgba(245, 158, 11, 0.1); 
     color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-/* Professional Tabs */
+/* Clean Tabs */
 .tab-parent {
     background: var(--card-bg) !important;
-    border-radius: 12px;
+    border-radius: 10px;
     margin: 1.25rem 2rem;
-    padding: 0.5rem;
+    padding: 0.375rem;
     border: 1px solid var(--card-border);
-    box-shadow: var(--shadow-sm);
 }
 
 .tab {
     background: transparent !important;
     border: none !important;
     color: var(--text-secondary) !important;
-    padding: 0.75rem 1.5rem !important;
+    padding: 0.625rem 1.25rem !important;
     font-weight: 500 !important;
     font-size: 0.875rem !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     transition: all 0.2s ease !important;
-    letter-spacing: -0.01em;
 }
 
 .tab:hover {
-    background: rgba(59, 130, 246, 0.1) !important;
+    background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
 }
 
 .tab--selected {
-    background: var(--gradient-primary) !important;
+    background: #000000 !important;
     color: #fff !important;
     border: none !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
 }
 
 /* Data Tables */
 .dash-spreadsheet-container .dash-spreadsheet-inner th {
-    background: rgba(31, 41, 55, 0.8) !important;
+    background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
     font-weight: 600;
     border: none !important;
+    border-bottom: 2px solid var(--card-border) !important;
     padding: 1rem !important;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -410,32 +355,24 @@ body {
 }
 
 .dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
-    background: var(--card-bg-hover) !important;
+    background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
 }
 
 /* Buttons */
 .btn-primary-gradient {
-    background: var(--gradient-primary);
+    background: #000000;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     color: #fff;
     font-size: 0.875rem;
-    letter-spacing: -0.01em;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary-gradient:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    filter: brightness(1.1);
-}
-
-.btn-primary-gradient:active {
-    transform: translateY(0);
+    background: #333333;
 }
 
 /* Pulse Animation */
@@ -445,16 +382,15 @@ body {
     border-radius: 50%;
     background: var(--success);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
 }
 
 @keyframes pulse {
     0%, 100% { 
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
         transform: scale(1);
     }
     50% { 
-        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
         transform: scale(1.05);
     }
 }
@@ -482,19 +418,18 @@ body {
     width: 12px;
     height: 12px;
     border-radius: 4px;
-    box-shadow: var(--shadow-sm);
 }
 
 /* Dropdown Styling */
 .Select-control {
-    background: var(--card-bg-hover) !important;
+    background: var(--card-bg) !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 10px !important;
-    min-height: 44px !important;
+    border-radius: 8px !important;
+    min-height: 42px !important;
 }
 
 .Select-control:hover {
-    border-color: var(--primary) !important;
+    border-color: #000000 !important;
 }
 
 .Select-value-label, .Select-placeholder {
@@ -504,7 +439,7 @@ body {
 .Select-menu-outer {
     background: var(--card-bg) !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     box-shadow: var(--shadow-lg) !important;
     margin-top: 4px !important;
 }
@@ -516,43 +451,43 @@ body {
 }
 
 .Select-option:hover, .Select-option.is-focused {
-    background: var(--card-bg-hover) !important;
+    background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
 }
 
 .Select-option.is-selected {
-    background: rgba(59, 130, 246, 0.2) !important;
-    color: var(--primary-light) !important;
+    background: #f3f4f6 !important;
+    color: #000000 !important;
 }
 
 /* Input Fields */
 .form-control, input[type="text"], textarea {
-    background: var(--card-bg-hover) !important;
+    background: var(--card-bg) !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     color: var(--text-primary) !important;
     padding: 0.75rem 1rem !important;
     transition: all 0.2s ease;
 }
 
 .form-control:focus, input[type="text"]:focus, textarea:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
     outline: none !important;
 }
 
 /* Date Picker */
 .DateInput_input {
-    background: var(--card-bg-hover) !important;
+    background: var(--card-bg) !important;
     color: var(--text-primary) !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     font-size: 0.875rem !important;
 }
 
 .DateRangePickerInput {
-    background: var(--card-bg-hover) !important;
+    background: var(--card-bg) !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
 }
 
 /* Loading Spinner */
@@ -561,7 +496,7 @@ body {
 }
 
 .dash-spinner {
-    border-color: var(--primary) !important;
+    border-color: #000000 !important;
     border-top-color: transparent !important;
 }
 
@@ -569,7 +504,7 @@ body {
 .modal-content {
     background: var(--card-bg) !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     box-shadow: var(--shadow-lg) !important;
 }
 
@@ -639,30 +574,13 @@ body {
 .interactive-element:hover {
     transform: scale(1.02);
 }
-
-/* Glow Effects */
-.glow-primary {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-.glow-success {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
-.glow-warning {
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-}
-
-.glow-danger {
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-}
 """
 
 # --- Dash App Initialization ---
 app = dash.Dash(
     __name__, 
     external_stylesheets=[
-        dbc.themes.DARKLY,
+        dbc.themes.BOOTSTRAP,
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     ],
     suppress_callback_exceptions=True
@@ -829,10 +747,10 @@ def build_alert_item(alert):
             }),
             html.Div([
                 html.Div([
-                    html.Span(alert.get('alert_name', 'Alert'), style={"fontWeight": "600", "color": "#f9fafb", "fontSize": "0.875rem"}),
+                    html.Span(alert.get('alert_name', 'Alert'), style={"fontWeight": "600", "color": "#111827", "fontSize": "0.875rem"}),
                     html.Span(time_ago, style={"fontSize": "0.7rem", "color": "#6b7280", "marginLeft": "auto"}) if time_ago else None
                 ], className="d-flex align-items-center justify-content-between"),
-                html.P(alert.get('message', ''), className="mb-0", style={"fontSize": "0.8rem", "color": "#9ca3af", "marginTop": "0.25rem", "lineHeight": "1.4"})
+                html.P(alert.get('message', ''), className="mb-0", style={"fontSize": "0.8rem", "color": "#4b5563", "marginTop": "0.25rem", "lineHeight": "1.4"})
             ], style={"flex": "1", "minWidth": "0"})
         ], className="d-flex align-items-start gap-3")
     ], className=f"alert-item {severity_class}")
@@ -850,7 +768,7 @@ def build_alerts_section(alerts: list):
                     "background": "rgba(16, 185, 129, 0.1)", "display": "flex",
                     "alignItems": "center", "justifyContent": "center", "margin": "0 auto 1rem"
                 }),
-                html.P("All Systems Operational", style={"color": "#f9fafb", "fontWeight": "600", "marginBottom": "0.25rem"}),
+                html.P("All Systems Operational", style={"color": "#111827", "fontWeight": "600", "marginBottom": "0.25rem"}),
                 html.P("No active alerts at this time", style={"color": "#6b7280", "fontSize": "0.85rem", "marginBottom": "0"})
             ], className="text-center py-4")
         ])
@@ -896,7 +814,7 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
             type="rect", x0=x-w/2, y0=y-h/2, x1=x+w/2, y1=y+h/2,
             line=dict(color="#4b5563", width=2), fillcolor="#374151", layer="below"
         )
-        fig.add_annotation(x=x, y=y, text=gantry['id'], showarrow=False, font=dict(size=9, color="#f9fafb"))
+        fig.add_annotation(x=x, y=y, text=gantry['id'], showarrow=False, font=dict(size=9, color="#111827"))
 
     # Draw Pump Stations
     for name, p_coords in DEPOT_LAYOUT.get('pump_stations', {}).items():
@@ -1038,10 +956,10 @@ def build_inventory_chart(tanks_data):
         hole=0.65,
         marker=dict(
             colors=colors, 
-            line=dict(color='#111827', width=3)
+            line=dict(color='#ffffff', width=3)
         ),
         textinfo='percent',
-        textfont=dict(size=11, color='#fff', family='Inter'),
+        textfont=dict(size=11, color='#111827', family='Inter'),
         hovertemplate="<b>%{label}</b><br>%{value:.2f}M Litres<br>%{percent}<extra></extra>",
         direction='clockwise',
         sort=False
@@ -1057,7 +975,7 @@ def build_inventory_chart(tanks_data):
             y=-0.25, 
             xanchor="center", 
             x=0.5,
-            font=dict(size=10, color="#9ca3af", family='Inter'),
+            font=dict(size=10, color="#4b5563", family='Inter'),
             itemsizing='constant'
         ),
         paper_bgcolor='rgba(0,0,0,0)',
@@ -1069,7 +987,7 @@ def build_inventory_chart(tanks_data):
                 text=f"<b>{total:.1f}M</b>",
                 x=0.5, y=0.55, 
                 font_size=20, 
-                font_color="#f9fafb",
+                font_color="#111827",
                 font_family='Inter',
                 showarrow=False
             ),
@@ -1083,10 +1001,10 @@ def build_inventory_chart(tanks_data):
             )
         ],
         hoverlabel=dict(
-            bgcolor="#1f2937",
+            bgcolor="#ffffff",
             font_size=12,
             font_family="Inter",
-            bordercolor="#374151"
+            bordercolor="#e5e7eb"
         )
     )
     
@@ -1203,10 +1121,10 @@ def build_overview_layout():
                 html.Span(id='last-updated-time')
             ], style={
                 "display": "inline-flex", "alignItems": "center",
-                "background": "rgba(31, 41, 55, 0.5)", "padding": "0.5rem 1rem",
-                "borderRadius": "20px", "border": "1px solid rgba(55, 65, 81, 0.5)"
+                "background": "#f3f4f6", "padding": "0.5rem 1rem",
+                "borderRadius": "20px", "border": "1px solid #e5e7eb"
             })
-        ], className="text-center", style={"color": "#6b7280", "fontSize": "0.75rem"})
+        ], className="text-center", style={"color": "#4b5563", "fontSize": "0.75rem"})
     ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
@@ -1223,7 +1141,7 @@ def build_historical_analysis_layout():
                     "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
                 }),
                 html.Div([
-                    html.H4("Historical Data Analysis", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.H4("Historical Data Analysis", style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "700"}),
                     html.P("Analyze trends and patterns in your depot data", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
                 ])
             ], className="d-flex align-items-center")
@@ -1232,15 +1150,15 @@ def build_historical_analysis_layout():
         html.Div([
             dbc.Row([
                 dbc.Col([
-                    html.Label("Select Asset", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
+                    html.Label("Select Asset", style={"color": "#4b5563", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='history-asset-dropdown', placeholder="Choose an asset...", className="mb-3")
                 ], lg=3, md=6),
                 dbc.Col([
-                    html.Label("Select Metric", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
+                    html.Label("Select Metric", style={"color": "#4b5563", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='history-metric-dropdown', placeholder="Choose a metric...", className="mb-3")
                 ], lg=3, md=6),
                 dbc.Col([
-                    html.Label("Date Range", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
+                    html.Label("Date Range", style={"color": "#4b5563", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.DatePickerRange(
                         id='history-date-picker',
                         start_date=datetime.date.today() - datetime.timedelta(days=7),
@@ -1280,7 +1198,7 @@ def build_asset_info_layout():
                     "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
                 }),
                 html.Div([
-                    html.H4("Asset Registry", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.H4("Asset Registry", style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "700"}),
                     html.P("Complete inventory of all depot assets", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
                 ])
             ], className="d-flex align-items-center")
@@ -1308,7 +1226,7 @@ def build_logbook_layout():
                     "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
                 }),
                 html.Div([
-                    html.H4("Operations Logbook", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.H4("Operations Logbook", style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "700"}),
                     html.P("Record operational events and activities", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
                 ])
             ], className="d-flex align-items-center")
@@ -1320,14 +1238,14 @@ def build_logbook_layout():
                     html.Div([
                         html.I(className="fas fa-pen-to-square me-2", style={"color": "#10b981"}),
                         html.Span("New Entry", style={"fontWeight": "600"})
-                    ], style={"color": "#f9fafb", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
+                    ], style={"color": "#111827", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
                     dbc.Row([
                         dbc.Col([
-                            html.Label("Your Name", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
+                            html.Label("Your Name", style={"color": "#4b5563", "fontSize": "0.8rem", "fontWeight": "500"}),
                             dbc.Input(id='log-user-name', type='text', placeholder="Enter your name...", className="mb-3")
                         ], md=6),
                         dbc.Col([
-                            html.Label("Event Type", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
+                            html.Label("Event Type", style={"color": "#4b5563", "fontSize": "0.8rem", "fontWeight": "500"}),
                             dcc.Dropdown(
                                 id='log-event-type',
                                 options=[
@@ -1342,9 +1260,9 @@ def build_logbook_layout():
                             )
                         ], md=6)
                     ]),
-                    html.Label("Related Asset (Optional)", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
+                    html.Label("Related Asset (Optional)", style={"color": "#4b5563", "fontSize": "0.8rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='log-asset-dropdown', placeholder="Select asset...", className="mb-3"),
-                    html.Label("Description", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
+                    html.Label("Description", style={"color": "#4b5563", "fontSize": "0.8rem", "fontWeight": "500"}),
                     dbc.Textarea(id='log-description', placeholder="Describe the event...", style={'height': '120px'}, className="mb-4"),
                     dbc.Button([
                         html.I(className="fas fa-paper-plane me-2"),
@@ -1358,7 +1276,7 @@ def build_logbook_layout():
                     html.Div([
                         html.I(className="fas fa-clock-rotate-left me-2", style={"color": "#3b82f6"}),
                         html.Span("Recent Entries", style={"fontWeight": "600"})
-                    ], style={"color": "#f9fafb", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
+                    ], style={"color": "#111827", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
                     html.Div(id='recent-log-entries', className="log-scroll", style={'maxHeight': '400px', 'overflowY': 'auto'})
                 ], className="glass-card h-100")
             ], lg=6, className="mb-4")
@@ -1379,7 +1297,7 @@ def build_simulation_sandbox_layout():
                     "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
                 }),
                 html.Div([
-                    html.H4("Simulation Sandbox", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.H4("Simulation Sandbox", style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "700"}),
                     html.P("Run what-if scenarios and predictive simulations for operational planning", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
                 ])
             ], className="d-flex align-items-center")
@@ -1401,7 +1319,7 @@ def build_simulation_sandbox_layout():
                         }),
                         html.Div([
                             html.H5("Tank Transfer Simulation", 
-                                    style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "600"}),
+                                    style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "600"}),
                             html.Span("Predict transfer times and volume changes", 
                                       style={"color": "#6b7280", "fontSize": "0.8rem"})
                         ])
@@ -1493,36 +1411,36 @@ def build_simulation_sandbox_layout():
                 html.Div([
                     html.Div([
                         html.I(className="fas fa-info-circle me-2", style={"color": "#3b82f6"}),
-                        html.Span("How It Works", style={"fontWeight": "600", "color": "#f9fafb"})
+                        html.Span("How It Works", style={"fontWeight": "600", "color": "#111827"})
                     ], className="mb-2"),
                     html.P([
                         "The simulation calculates transfer time based on pump flow rate, tank capacities, ",
                         "and current fill levels. It predicts when high/low level alarms will trigger."
-                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
+                    ], style={"color": "#4b5563", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
                 ], className="glass-card h-100")
             ], lg=4, className="mb-3"),
             dbc.Col([
                 html.Div([
                     html.Div([
                         html.I(className="fas fa-shield-halved me-2", style={"color": "#10b981"}),
-                        html.Span("Safety Thresholds", style={"fontWeight": "600", "color": "#f9fafb"})
+                        html.Span("Safety Thresholds", style={"fontWeight": "600", "color": "#111827"})
                     ], className="mb-2"),
                     html.P([
                         "Transfer stops automatically at 95% destination capacity (high level) ",
                         "or 5% source capacity (low level) to prevent overflow and pump cavitation."
-                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
+                    ], style={"color": "#4b5563", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
                 ], className="glass-card h-100")
             ], lg=4, className="mb-3"),
             dbc.Col([
                 html.Div([
                     html.Div([
                         html.I(className="fas fa-gauge-high me-2", style={"color": "#f59e0b"}),
-                        html.Span("Pump Specifications", style={"fontWeight": "600", "color": "#f9fafb"})
+                        html.Span("Pump Specifications", style={"fontWeight": "600", "color": "#111827"})
                     ], className="mb-2"),
                     html.P([
                         "Flow rates vary by pump: Zone A (2500-3000 LPM), Zone B (2000 LPM), ",
                         "Zone C (1500-2200 LPM). Select appropriate pump for product compatibility."
-                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
+                    ], style={"color": "#4b5563", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
                 ], className="glass-card h-100")
             ], lg=4, className="mb-3"),
         ])
@@ -1542,7 +1460,7 @@ def build_log_viewer_layout():
                     "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
                 }),
                 html.Div([
-                    html.H4("System Logs", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.H4("System Logs", style={"color": "#111827", "marginBottom": "0.25rem", "fontWeight": "700"}),
                     html.P("Real-time dashboard activity logs", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
                 ])
             ], className="d-flex align-items-center")
@@ -1554,9 +1472,9 @@ def build_log_viewer_layout():
                     'width': '100%', 'height': '600px',
                     'fontFamily': '"JetBrains Mono", "Fira Code", "Consolas", monospace',
                     'fontSize': '12px',
-                    'backgroundColor': '#0a0f1a',
+                    'backgroundColor': '#1f2937',
                     'color': '#10b981',
-                    'border': '1px solid #1f2937',
+                    'border': '1px solid #e5e7eb',
                     'borderRadius': '12px',
                     'padding': '1.25rem',
                     'lineHeight': '1.6'
@@ -1607,14 +1525,13 @@ app.layout = html.Div([
                             html.I(className="fas fa-industry", style={"fontSize": "1.25rem"})
                         ], style={
                             "width": "40px", "height": "40px", "borderRadius": "10px",
-                            "background": "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                            "background": "#000000",
                             "display": "flex", "alignItems": "center", "justifyContent": "center",
-                            "color": "#fff", "marginRight": "0.875rem",
-                            "boxShadow": "0 4px 12px rgba(59, 130, 246, 0.3)"
+                            "color": "#fff", "marginRight": "0.875rem"
                         }),
                         html.Div([
-                            html.Span("Fuel Depot", style={"fontWeight": "700", "fontSize": "1.15rem", "color": "#f9fafb", "letterSpacing": "-0.025em"}),
-                            html.Span(" Digital Twin", style={"fontWeight": "400", "fontSize": "1.15rem", "color": "#9ca3af", "letterSpacing": "-0.025em"})
+                            html.Span("Fuel Depot", style={"fontWeight": "700", "fontSize": "1.15rem", "color": "#111827", "letterSpacing": "-0.025em"}),
+                            html.Span(" Digital Twin", style={"fontWeight": "400", "fontSize": "1.15rem", "color": "#6b7280", "letterSpacing": "-0.025em"})
                         ])
                     ], className="d-flex align-items-center")
                 ]),
@@ -1628,7 +1545,7 @@ app.layout = html.Div([
                 ])
             ], className="w-100", align="center")
         ], fluid=True)
-    ], className="navbar", dark=True),
+    ], className="navbar", dark=False),
     
     # Navigation Tabs
     dcc.Tabs(
@@ -1785,19 +1702,19 @@ def update_all_components(data, fire_sim_results):
                             "letterSpacing": "0.5px", "color": color, "background": bg,
                             "padding": "0.25rem 0.5rem", "borderRadius": "4px", "marginRight": "0.75rem"
                         }),
-                        html.Span(log.get('user_name', 'System'), style={"color": "#f9fafb", "fontWeight": "500", "fontSize": "0.875rem"})
+                        html.Span(log.get('user_name', 'System'), style={"color": "#111827", "fontWeight": "500", "fontSize": "0.875rem"})
                     ], className="d-flex align-items-center mb-1"),
                     html.P(log.get('description', '')[:100] + "..." if len(log.get('description', '')) > 100 else log.get('description', ''), 
-                           className="mb-0", style={"fontSize": "0.8rem", "color": "#9ca3af", "lineHeight": "1.4"})
+                           className="mb-0", style={"fontSize": "0.8rem", "color": "#4b5563", "lineHeight": "1.4"})
                 ], style={
-                    "background": "rgba(31, 41, 55, 0.5)", "borderRadius": "10px",
+                    "background": "#f8f9fa", "borderRadius": "10px",
                     "padding": "0.875rem 1rem", "marginBottom": "0.75rem",
                     "borderLeft": f"3px solid {color}"
                 }))
             log_list = html.Div(log_items)
         else:
             log_list = html.Div([
-                html.I(className="fas fa-inbox", style={"fontSize": "1.5rem", "color": "#374151"}),
+                html.I(className="fas fa-inbox", style={"fontSize": "1.5rem", "color": "#9ca3af"}),
                 html.P("No recent operations", style={"color": "#6b7280", "marginTop": "0.5rem", "marginBottom": "0"})
             ], className="text-center py-4")
         
