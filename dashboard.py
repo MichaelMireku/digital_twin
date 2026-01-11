@@ -28,7 +28,7 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
 API_KEY = os.getenv("API_KEY", settings.API_KEY if hasattr(settings, 'API_KEY') else "demo_key")
 PRODUCT_PRICING = {"PMS": 18.00, "AGO": 17.25, "DPK": 16.50, "ATK": 20.25, "Default": 15.00}
 PRODUCT_COLORS = {"Gasoline (PMS)": "#ef4444", "Gasoil (AGO)": "#0ea5e9", "DPK": "#8b5cf6", "ATK": "#22c55e", "Unknown": "#64748b"}
-LATITUDE, LONGITUDE = 40.7128, -74.0060
+LATITUDE, LONGITUDE = 5.7194, -0.0847  # Oyibi, Ghana (near Dodowa)
 
 # --- Electricity Costing ---
 ELECTRICITY_RATE_PER_KWH = 0.12
@@ -621,6 +621,7 @@ def get_api_data(endpoint: str, payload: dict = None, method: str = 'GET') -> di
 # Weather cache to avoid rate limiting
 _weather_cache = {"data": None, "timestamp": 0}
 WEATHER_CACHE_TTL = 300  # 5 minutes
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 
 def fetch_weather_data():
     import time
@@ -630,18 +631,23 @@ def fetch_weather_data():
     if _weather_cache["data"] and (current_time - _weather_cache["timestamp"]) < WEATHER_CACHE_TTL:
         return _weather_cache["data"]
     
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={LATITUDE}&longitude={LONGITUDE}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m"
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={LATITUDE}&lon={LONGITUDE}&appid={OPENWEATHER_API_KEY}&units=metric"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        data = response.json().get('current', {})
-        description = get_weather_description(data.get('weather_code'))
-        icon = get_weather_icon(data.get('weather_code'))
+        data = response.json()
+        weather_main = data.get('weather', [{}])[0]
+        main_data = data.get('main', {})
+        wind_data = data.get('wind', {})
+        
+        description = weather_main.get('description', 'Unknown').title()
+        icon = get_weather_icon(weather_main.get('icon', ''))
+        
         result = {
             "description": description,
-            "temp": f"{data.get('temperature_2m', ''):.1f}",
-            "wind_speed": f"{data.get('wind_speed_10m', ''):.1f}",
-            "humidity": f"{data.get('relative_humidity_2m', '')}",
+            "temp": f"{main_data.get('temp', 0):.1f}",
+            "wind_speed": f"{wind_data.get('speed', 0) * 3.6:.1f}",  # Convert m/s to km/h
+            "humidity": f"{main_data.get('humidity', 0)}",
             "icon": icon
         }
         # Update cache
@@ -649,19 +655,26 @@ def fetch_weather_data():
         _weather_cache["timestamp"] = current_time
         return result
     except requests.exceptions.RequestException as e:
-        logger.error(f"Public weather API call failed: {e}")
+        logger.error(f"OpenWeather API call failed: {e}")
         # Return cached data if available, otherwise fallback
         if _weather_cache["data"]:
             return _weather_cache["data"]
         return {"description": "Unavailable", "temp": "--", "wind_speed": "--", "humidity": "--", "icon": "fa-cloud-question"}
 
-def get_weather_description(code):
-    wmo_codes = {0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast", 45: "Foggy", 61: "Light Rain", 80: "Showers", 95: "Thunderstorm"}
-    return wmo_codes.get(code, "Unknown")
-
-def get_weather_icon(code):
-    icons = {0: "fa-sun", 1: "fa-sun", 2: "fa-cloud-sun", 3: "fa-cloud", 45: "fa-smog", 61: "fa-cloud-rain", 80: "fa-cloud-showers-heavy", 95: "fa-bolt"}
-    return icons.get(code, "fa-cloud")
+def get_weather_icon(icon_code):
+    """Map OpenWeather icon codes to Font Awesome icons."""
+    icon_map = {
+        '01d': 'fa-sun', '01n': 'fa-moon',
+        '02d': 'fa-cloud-sun', '02n': 'fa-cloud-moon',
+        '03d': 'fa-cloud', '03n': 'fa-cloud',
+        '04d': 'fa-cloud', '04n': 'fa-cloud',
+        '09d': 'fa-cloud-showers-heavy', '09n': 'fa-cloud-showers-heavy',
+        '10d': 'fa-cloud-rain', '10n': 'fa-cloud-rain',
+        '11d': 'fa-bolt', '11n': 'fa-bolt',
+        '13d': 'fa-snowflake', '13n': 'fa-snowflake',
+        '50d': 'fa-smog', '50n': 'fa-smog',
+    }
+    return icon_map.get(icon_code, 'fa-cloud')
 
 
 def format_large_number(value, prefix="", suffix=""):
