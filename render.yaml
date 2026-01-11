@@ -89,3 +89,14 @@ services:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
+
+  # Static site for Simulator Monitor
+  - type: web
+    name: depot-simulator-monitor
+    runtime: static
+    buildCommand: mkdir -p public && cp simulator_monitor.html public/index.html
+    staticPublishPath: public
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: "*"

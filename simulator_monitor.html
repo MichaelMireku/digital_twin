@@ -144,24 +144,6 @@
         <h3>MQTT Configuration</h3>
         <div class="config-row">
             <div class="config-field">
-                <label>Broker Host</label>
-                <input type="text" id="broker" value="ba959be4d2874a21ae71690f1de8da95.s1.eu.hivemq.cloud" />
-            </div>
-            <div class="config-field">
-                <label>WebSocket Port</label>
-                <input type="text" id="port" value="8884" />
-            </div>
-            <div class="config-field">
-                <label>Username</label>
-                <input type="text" id="username" value="chief" />
-            </div>
-            <div class="config-field">
-                <label>Password</label>
-                <input type="password" id="password" value="Engineer1" />
-            </div>
-        </div>
-        <div class="config-row">
-            <div class="config-field">
                 <label>Topic (subscribe)</label>
                 <input type="text" id="topic" value="demo/depot/dev/#" />
             </div>
@@ -171,6 +153,12 @@
             <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
         </div>
     </div>
+    
+    <!-- Hidden config values -->
+    <input type="hidden" id="broker" value="ba959be4d2874a21ae71690f1de8da95.s1.eu.hivemq.cloud" />
+    <input type="hidden" id="port" value="8884" />
+    <input type="hidden" id="username" value="chief" />
+    <input type="hidden" id="password" value="Engineer1" />
 
     <div class="stats">
         <div class="stat-card">
