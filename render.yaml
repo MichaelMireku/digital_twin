@@ -100,3 +100,14 @@ services:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
+
+  # Landing page with navigation links
+  - type: web
+    name: depot-home
+    runtime: static
+    buildCommand: mkdir -p public && cp index.html public/index.html
+    staticPublishPath: public
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: "*"
