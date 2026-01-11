@@ -6,6 +6,40 @@ databases:
     region: oregon
 
 services:
+  # API service (deploy first)
+  - type: web
+    name: depot-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r api/requirements.txt
+    startCommand: gunicorn api.app:app -b 0.0.0.0:$PORT
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: depot-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: depot-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: depot-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: depot-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: depot-db
+          property: database
+      - key: API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"
+
   - type: web
     name: depot-dashboard
     runtime: python
@@ -37,52 +71,16 @@ services:
       - key: API_KEY
         sync: false
       - key: API_BASE_URL
-        fromService:
-          name: depot-api
-          type: web
-          property: host
+        value: "https://depot-api.onrender.com"
       - key: PYTHON_VERSION
         value: "3.11"
-
-  - type: web
-    name: depot-api
-    runtime: python
-    plan: free
-    region: oregon
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn api.app:app -b 0.0.0.0:$PORT
-    envVars:
-      - key: DB_HOST
-        fromDatabase:
-          name: depot-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: depot-db
-          property: port
-      - key: DB_USER
-        fromDatabase:
-          name: depot-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: depot-db
-          property: password
-      - key: DB_NAME
-        fromDatabase:
-          name: depot-db
-          property: database
-      - key: API_KEY
-        sync: false
 
   # Static site for 3D viewer
   - type: web
     name: depot-3dview
     runtime: static
-    plan: free
-    region: oregon
-    buildCommand: echo "Static site ready"
-    staticPublishPath: .
+    buildCommand: mkdir -p public && cp 3dview.html public/index.html && cp -r assets public/
+    staticPublishPath: public
     routes:
       - type: rewrite
         source: /api/*
@@ -91,6 +89,3 @@ services:
       - path: /*
         name: Access-Control-Allow-Origin
         value: "*"
-    envVars:
-      - key: API_KEY
-        sync: false
