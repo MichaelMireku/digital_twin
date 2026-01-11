@@ -24,6 +24,7 @@ except ImportError as e:
     sys.exit(1)
 
 import paho.mqtt.client as mqtt
+import ssl
 
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -35,6 +36,17 @@ class SensorSimulator:
     """
     def __init__(self, assets: List[Dict[str, Any]]):
         self.client = mqtt.Client()
+        
+        # Configure TLS if enabled
+        if settings.MQTT_USE_TLS:
+            self.client.tls_set(cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLS)
+            logger.info("MQTT TLS enabled")
+        
+        # Configure authentication if credentials provided
+        if settings.MQTT_USERNAME and settings.MQTT_PASSWORD:
+            self.client.username_pw_set(settings.MQTT_USERNAME, settings.MQTT_PASSWORD)
+            logger.info("MQTT authentication configured")
+        
         self.assets = assets
         self.asset_states = {
             asset['asset_id']: {

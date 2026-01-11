@@ -37,10 +37,14 @@ MQTT_BROKER_PORT = int(os.getenv("MQTT_BROKER_PORT", "1883"))
 MQTT_CLIENT_ID_PROCESSOR = os.getenv("MQTT_CLIENT_ID_PROCESSOR", "digital_twin_processor")
 MQTT_CLIENT_ID_SIMULATOR = os.getenv("MQTT_CLIENT_ID_SIMULATOR", "sensor_simulator")
 MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", "demo/depot/dev")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() == "true"
 
 logger.info(f"MQTT_BROKER_ADDRESS = {MQTT_BROKER_ADDRESS}")
 logger.info(f"MQTT_BROKER_PORT = {MQTT_BROKER_PORT}")
 logger.info(f"MQTT_BASE_TOPIC = {MQTT_BASE_TOPIC}")
+logger.info(f"MQTT_USE_TLS = {MQTT_USE_TLS}")
 
 
 # --- Database Configuration (For SQLAlchemy) ---

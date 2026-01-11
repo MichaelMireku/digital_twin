@@ -1,5 +1,6 @@
 # File: fuel_depot_digital_twin/processing_service.py
 import paho.mqtt.client as mqtt
+import ssl
 import json
 import datetime
 import time
@@ -310,6 +311,17 @@ if __name__ == "__main__":
         preload_all_strapping_tables(tank_ids)
     
     mqtt_client = mqtt.Client(client_id=settings.MQTT_CLIENT_ID_PROCESSOR)
+    
+    # Configure TLS if enabled
+    if settings.MQTT_USE_TLS:
+        mqtt_client.tls_set(cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLS)
+        logger.info("MQTT TLS enabled")
+    
+    # Configure authentication if credentials provided
+    if settings.MQTT_USERNAME and settings.MQTT_PASSWORD:
+        mqtt_client.username_pw_set(settings.MQTT_USERNAME, settings.MQTT_PASSWORD)
+        logger.info("MQTT authentication configured")
+    
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
     mqtt_client.on_disconnect = on_disconnect
