@@ -1649,12 +1649,14 @@ def update_api_data(n):
     assets_data = get_api_data('/api/v1/assets', payload={'per_page': 500})
     alerts_data = get_api_data('/api/v1/alerts/active')
     logs_data = get_api_data('/api/v1/logs')
+    pump_costs_data = get_api_data('/api/v1/pumps/costs')  # Fetch real pump operating costs
     weather_data = fetch_weather_data()
     logger.info("API data fetch complete.")
     return {
         'assets': assets_data.get('assets', []) if isinstance(assets_data, dict) else [],
         'alerts': alerts_data if isinstance(alerts_data, list) else [],
         'logs': logs_data if isinstance(logs_data, list) else [],
+        'pump_costs': pump_costs_data if isinstance(pump_costs_data, dict) and 'error' not in pump_costs_data else {},
         'weather': weather_data,
         'last_updated': datetime.datetime.now().isoformat()
     }
@@ -1704,17 +1706,41 @@ def update_all_components(data, fire_sim_results):
         active_pumps = sum(1 for a in assets if a.get('asset_type') == 'Pump' and a.get('is_active', True) is not False)
         total_pumps = sum(1 for a in assets if a.get('asset_type') == 'Pump')
         
-        daily_kwh = active_pumps * PUMP_POWER_KW * ESTIMATED_DAILY_HOURS_PER_PUMP
-        daily_electricity_cost = (daily_kwh * ELECTRICITY_RATE_PER_KWH) + SERVICE_CHARGE
+        # Get real pump costs and runtime data from API
+        pump_costs = data.get('pump_costs', {})
+        pump_summary = pump_costs.get('summary', {})
+        pumps_data = pump_costs.get('pumps', [])
+        
+        # Calculate actual daily operating cost from real data
+        if pump_summary.get('total_cost_ghs'):
+            daily_electricity_cost = pump_summary['total_cost_ghs']
+        else:
+            # Fallback to estimate if no real data
+            daily_kwh = active_pumps * PUMP_POWER_KW * ESTIMATED_DAILY_HOURS_PER_PUMP
+            daily_electricity_cost = (daily_kwh * ELECTRICITY_RATE_PER_KWH) + SERVICE_CHARGE
+        
+        # Calculate average pump runtime percentage from real data
+        if pumps_data:
+            running_pumps = sum(1 for p in pumps_data if p.get('runtime_percentage', 0) > 0)
+            avg_runtime = sum(p.get('runtime_percentage', 0) for p in pumps_data) / len(pumps_data)
+            pump_display = f"{running_pumps}/{total_pumps}"
+            pump_subtitle = f"{avg_runtime:.0f}% avg uptime"
+        else:
+            pump_display = f"{active_pumps}/{total_pumps}"
+            pump_subtitle = ""
         
         # Build KPI cards with professional styling
         kpi_inventory = build_kpi_card("Total Inventory", f"{total_inv/1e6:.2f}", "M Litres", "fa-oil-can", "#3b82f6")
         kpi_ullage = build_kpi_card("Usable Ullage", f"{usable_ullage/1e6:.2f}", "M Litres", "fa-arrow-up-from-bracket", "#10b981")
-        kpi_pumps = build_kpi_card("Active Pumps", f"{active_pumps}/{total_pumps}", "", "fa-gauge-high", "#f59e0b")
+        kpi_pumps = build_kpi_card("Active Pumps", pump_display, pump_subtitle, "fa-gauge-high", "#f59e0b")
         kpi_throughput = build_kpi_card("Daily Throughput", "10.1", "M Litres", "fa-truck-fast", "#8b5cf6")
         
+        # Show actual energy consumption if available
+        total_energy_kwh = pump_summary.get('total_energy_kwh', 0)
+        cost_subtitle = f"{total_energy_kwh:.1f} kWh" if total_energy_kwh else ""
+        
         kpi_value = build_kpi_card("Inventory Value", format_large_number(inv_value, prefix="₵"), "", "fa-cedi-sign", "#10b981")
-        kpi_cost = build_kpi_card("Daily Op. Cost", f"₵{daily_electricity_cost:,.0f}", "", "fa-bolt", "#f59e0b")
+        kpi_cost = build_kpi_card("Daily Op. Cost", f"₵{daily_electricity_cost:,.2f}", cost_subtitle, "fa-bolt", "#f59e0b")
         kpi_efficiency = build_kpi_card("Efficiency", "94.2%", "", "fa-chart-line", "#3b82f6")
         
         # Alerts
