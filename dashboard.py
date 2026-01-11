@@ -592,7 +592,7 @@ app.title = "Fuel Depot Digital Twin"
 def get_api_data(endpoint: str, payload: dict = None, method: str = 'GET') -> dict:
     if not API_KEY:
         logger.error("API Key not configured for dashboard.")
-        return {}
+        return {"error": "API Key not configured"}
     try:
         headers = {'x-api-key': API_KEY, 'Content-Type': 'application/json'}
         url = f"{API_BASE_URL}{endpoint}"
@@ -604,9 +604,19 @@ def get_api_data(endpoint: str, payload: dict = None, method: str = 'GET') -> di
         response.raise_for_status()
         logger.info(f"API call successful for {endpoint}")
         return response.json()
+    except requests.exceptions.HTTPError as e:
+        # Capture the error message from API response
+        error_msg = "Request failed"
+        try:
+            error_data = e.response.json()
+            error_msg = error_data.get('description') or error_data.get('message') or error_data.get('error') or str(e)
+        except:
+            error_msg = str(e)
+        logger.error(f"API call to {endpoint} failed: {error_msg}")
+        return {"error": error_msg}
     except requests.exceptions.RequestException as e:
         logger.error(f"API call to {endpoint} failed: {e}")
-        return {}
+        return {"error": f"Connection error: {str(e)}"}
 
 # Weather cache to avoid rate limiting
 _weather_cache = {"data": None, "timestamp": 0}
@@ -1995,6 +2005,35 @@ def run_tank_transfer_simulation(n_clicks, source_tank, dest_tank, pump_id):
     
     payload = {"source_tank_id": source_tank, "destination_tank_id": dest_tank, "pump_id": pump_id}
     results = get_api_data('/api/v1/simulations/tank-transfer', payload, 'POST')
+    
+    # Check for error response (product mismatch, invalid assets, etc.)
+    if 'error' in results:
+        error_msg = results['error']
+        # Determine icon based on error type
+        if 'mismatch' in error_msg.lower() or 'different products' in error_msg.lower():
+            icon = "fa-flask"
+            title = "Product Mismatch"
+        elif 'not found' in error_msg.lower():
+            icon = "fa-search"
+            title = "Asset Not Found"
+        elif 'not a' in error_msg.lower():
+            icon = "fa-ban"
+            title = "Invalid Asset Type"
+        else:
+            icon = "fa-exclamation-triangle"
+            title = "Simulation Error"
+        
+        return html.Div([
+            html.Div([
+                html.I(className=f"fas {icon}", style={"fontSize": "2rem", "color": "#ef4444"}),
+            ], style={
+                "width": "64px", "height": "64px", "borderRadius": "50%",
+                "background": "rgba(239, 68, 68, 0.1)", "display": "flex",
+                "alignItems": "center", "justifyContent": "center", "margin": "0 auto 1rem"
+            }),
+            html.Div(title, style={"color": "#ef4444", "fontWeight": "600", "fontSize": "1.1rem", "marginBottom": "0.5rem"}),
+            html.Div(error_msg, style={"color": "#6b7280", "fontSize": "0.9rem", "lineHeight": "1.5"})
+        ], className="text-center py-4")
     
     if not results or 'results' not in results:
         return html.Div([

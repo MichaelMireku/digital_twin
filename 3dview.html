@@ -72,8 +72,8 @@
         <p>Interactive 3D Facility View</p>
     </div>
     <button id="mode-toggle">Switch to Procedural</button>
-    <div id="data-status" class="loading">⏳ Connecting to API...</div>
-    <button id="api-key-btn" style="position:absolute;top:80px;right:10px;padding:6px 12px;background:rgba(0,0,0,0.6);border:1px solid #555;border-radius:6px;color:#aaa;cursor:pointer;font-size:11px;">🔑 Set API Key</button>
+    <div id="data-status" class="loading">Connecting to API...</div>
+    <button id="api-key-btn" style="position:absolute;top:80px;right:10px;padding:6px 12px;background:rgba(0,0,0,0.6);border:1px solid #555;border-radius:6px;color:#aaa;cursor:pointer;font-size:11px;">Set API Key</button>
 
     <script type="importmap">
         {
@@ -122,7 +122,7 @@
         }
         
         async function loadAllAssets() {
-            updateDataStatus('loading', '⏳ Loading assets...');
+            updateDataStatus('loading', 'Loading assets...');
             try {
                 const data = await fetchWithAuth('/assets?per_page=500');
                 assetsMetadata = {};
