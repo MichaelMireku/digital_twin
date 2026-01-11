@@ -71,7 +71,7 @@ services:
       - key: API_KEY
         sync: false
       - key: API_BASE_URL
-        value: "https://depot-api.onrender.com"
+        value: "https://depot-api-s5bd.onrender.com"
       - key: PYTHON_VERSION
         value: "3.11.7"
 
@@ -84,7 +84,7 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://depot-api.onrender.com/api/*
+        destination: https://depot-api-s5bd.onrender.com/api/*
     headers:
       - path: /*
         name: Access-Control-Allow-Origin

@@ -1512,8 +1512,8 @@ app.layout = html.Div([
     # Data stores
     dcc.Store(id='api-data-store'),
     dcc.Store(id='fire-sim-results-store'),
-    dcc.Interval(id='api-update-interval', interval=60 * 1000, n_intervals=0),  # 60s for free tier
-    dcc.Interval(id='log-update-interval', interval=60 * 1000, n_intervals=0),  # 60s for free tier
+    dcc.Interval(id='api-update-interval', interval=15 * 1000, n_intervals=0),
+    dcc.Interval(id='log-update-interval', interval=5 * 1000, n_intervals=0),
     
     # Professional Navbar
     dbc.Navbar([
