@@ -14,6 +14,8 @@ A real-time **Digital Twin** platform for petroleum storage depot operations. Th
 
 ## System Architecture
 
+> 📚 **Full Documentation**: See [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) for comprehensive architecture diagrams and technical details.
+
 ```mermaid
 flowchart TB
     subgraph External["External Systems"]
@@ -70,11 +72,6 @@ flowchart TB
     Assets --> REST
     Strapping --> Calc
     TimescaleDB --> REST
-    REST --> Dashboard
-    REST --> ThreeD
-    REST --> HMI
-```
-    
     REST --> Dashboard
     REST --> ThreeD
     REST --> HMI
@@ -232,14 +229,16 @@ fuel_depot_digital_twin/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Health check |
-| `GET` | `/assets` | List all assets |
-| `GET` | `/assets/{id}` | Get asset details |
-| `GET` | `/assets/{id}/history/{metric}` | Get metric history |
-| `GET` | `/alerts/active` | Get active alerts |
-| `POST` | `/simulate/fire` | Run fire simulation |
-| `POST` | `/simulate/transfer` | Run tank transfer simulation |
-| `GET` | `/logs` | Get operation logs |
-| `POST` | `/logs` | Create operation log |
+| `GET` | `/api/v1/assets` | List all assets |
+| `GET` | `/api/v1/assets/{id}` | Get asset details |
+| `GET` | `/api/v1/assets/{id}/metrics/{metric}/history` | Get metric history |
+| `GET` | `/api/v1/alerts/active` | Get active alerts |
+| `POST` | `/api/v1/simulations/fire-consequence` | Run fire simulation |
+| `POST` | `/api/v1/simulations/tank-transfer` | Run tank transfer simulation |
+| `POST` | `/api/v1/simulate/refresh` | Refresh sensor data |
+| `GET` | `/api/v1/pumps/costs` | Get pump operating costs with tariff breakdown |
+| `GET` | `/api/v1/logs` | Get operation logs |
+| `POST` | `/api/v1/logs` | Create operation log |
 
 ---
 
@@ -278,10 +277,10 @@ heat = calc.calculate_tank_heat_content(
 ### Volume Correction Factor (VCF)
 Based on ASTM D1250 / API MPMS Chapter 11.1:
 ```
-VCF = exp(-α × ΔT × (1 + 0.8 × α × ΔT))
+VCF = 1 - α × (T_observed - T_reference)
 where:
-  α = thermal expansion coefficient at 15°C
-  ΔT = T_observed - T_reference
+  α = thermal expansion coefficient (~0.00095 /°C)
+  T_reference = 20°C (standard)
 ```
 
 ### Mass Balance
@@ -290,17 +289,45 @@ Mass (kg) = Volume (L) × Density (kg/m³) / 1000
 Density(T) = Density(20°C) × [1 - β × (T - 20)]
 ```
 
-### Pump Energy
+### Pump Energy & Operating Cost
 ```
-Energy (kWh) = (ρ × g × Q × H × t) / (η × 3.6×10⁶)
-where:
-  ρ = density (kg/m³)
-  g = 9.81 m/s²
-  Q = flow rate (m³/s)
-  H = head (m)
-  η = pump efficiency
-  t = time (hours)
+P_actual = P_rated / η_motor
+Energy (kWh) = P_actual × time (hours)
+Cost (GHS) = Energy × Tariff_Rate
 ```
+
+### Ghana ECG Tariff Structure (Non-Residential, 1000+ kWh)
+
+```mermaid
+flowchart LR
+    subgraph Components["Tariff Components"]
+        EC["Energy: 1.59 GHS/kWh"]
+        SC["Service: 0.05 GHS/kWh"]
+        NHI["NHIL+GETFund: 0.1243 GHS/kWh"]
+    end
+    
+    subgraph Calculation["Calculation"]
+        BASE["Base: 1.7643 GHS/kWh"]
+        VAT["+ VAT 15%"]
+        TOTAL["= 2.21 GHS/kWh"]
+    end
+    
+    EC --> BASE
+    SC --> BASE
+    NHI --> BASE
+    BASE --> VAT
+    VAT --> TOTAL
+```
+
+| Component | Rate (GHS/kWh) |
+|-----------|---------------|
+| Energy Charge | 1.59 |
+| Service Charge | 0.05 |
+| NHIL + GETFund | 0.1243 |
+| VAT (15%) | 0.2646 |
+| **Total** | **≈ 2.21** |
+
+> 📚 **Detailed Documentation**: See [docs/CALCULATIONS_REFERENCE.md](docs/CALCULATIONS_REFERENCE.md) for complete calculation formulas and examples.
 
 ---
 
@@ -387,6 +414,31 @@ curl -X POST http://localhost:5000/api/v1/simulations/tank-transfer \
   }
 }
 ```
+
+---
+
+## Contributing
+
+---
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` folder:
+
+| Document | Description |
+|----------|-------------|
+| [SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) | Complete system architecture with Mermaid diagrams |
+| [CALCULATIONS_REFERENCE.md](docs/CALCULATIONS_REFERENCE.md) | Detailed calculation formulas and examples |
+
+### Key Documentation Topics
+
+- **System Architecture**: High-level overview, service communication, data flow
+- **Power Consumption**: How pump energy is calculated from motor ratings
+- **Ghana ECG Tariffs**: Complete breakdown of electricity cost calculations
+- **Physics Engine**: Mass balance, energy balance, heat transfer formulas
+- **Database Schema**: Entity relationships and table structures
+- **API Reference**: All endpoints with request/response examples
+- **Alerting System**: Alert lifecycle and configuration
 
 ---
 
