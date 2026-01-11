@@ -233,6 +233,80 @@ def create_operation_log():
         else:
             abort(500, description="Failed to save log entry.")
 
+@app.route('/api/v1/simulate/refresh', methods=['POST'])
+@require_api_key
+def refresh_sensor_data():
+    """Generate fresh simulated sensor readings for all tanks."""
+    import random
+    from sqlalchemy import text
+    
+    try:
+        with db_session_scope() as db:
+            # Get all storage tanks
+            result = db.execute(text("""
+                SELECT asset_id, capacity_litres, product_service 
+                FROM assets 
+                WHERE asset_type = 'StorageTank'
+            """))
+            tanks = result.fetchall()
+            
+            if not tanks:
+                return jsonify({"message": "No tanks found", "count": 0})
+            
+            now = datetime.datetime.now(datetime.timezone.utc)
+            
+            for tank in tanks:
+                asset_id = tank[0]
+                capacity = float(tank[1] or 10000000)
+                product = tank[2] or ''
+                
+                # Generate realistic fill level (40-85%)
+                fill_pct = random.uniform(40, 85)
+                volume_litres = capacity * (fill_pct / 100)
+                max_height_mm = 12000
+                level_mm = max_height_mm * (fill_pct / 100)
+                
+                # Temperature based on product
+                if 'AGO' in product.upper() or 'GASOIL' in product.upper():
+                    temp = random.uniform(28, 35)
+                else:
+                    temp = random.uniform(22, 30)
+                
+                # Insert sensor readings
+                db.execute(text("""
+                    INSERT INTO sensor_readings (time, asset_id, data_source_id, metric_name, value_numeric, unit, status)
+                    VALUES (:time, :asset_id, 'API_REFRESH', 'level_mm', :level, 'mm', 'OK')
+                """), {"time": now, "asset_id": asset_id, "level": round(level_mm, 2)})
+                
+                db.execute(text("""
+                    INSERT INTO sensor_readings (time, asset_id, data_source_id, metric_name, value_numeric, unit, status)
+                    VALUES (:time, :asset_id, 'API_REFRESH', 'temperature', :temp, 'C', 'OK')
+                """), {"time": now, "asset_id": asset_id, "temp": round(temp, 2)})
+                
+                db.execute(text("""
+                    INSERT INTO sensor_readings (time, asset_id, data_source_id, metric_name, value_numeric, unit, status)
+                    VALUES (:time, :asset_id, 'API_REFRESH', 'level_percentage', :pct, '%', 'OK')
+                """), {"time": now, "asset_id": asset_id, "pct": round(fill_pct, 2)})
+                
+                # Insert calculated volumes
+                db.execute(text("""
+                    INSERT INTO calculated_data (time, asset_id, metric_name, value, unit, calculation_status)
+                    VALUES (:time, :asset_id, 'volume_gov', :vol, 'litres', 'OK')
+                    ON CONFLICT (time, asset_id, metric_name) DO UPDATE SET value = :vol
+                """), {"time": now, "asset_id": asset_id, "vol": round(volume_litres, 2)})
+                
+                db.execute(text("""
+                    INSERT INTO calculated_data (time, asset_id, metric_name, value, unit, calculation_status)
+                    VALUES (:time, :asset_id, 'volume_gsv', :vol, 'litres', 'OK')
+                    ON CONFLICT (time, asset_id, metric_name) DO UPDATE SET value = :vol
+                """), {"time": now, "asset_id": asset_id, "vol": round(volume_litres * 0.98, 2)})
+            
+            logger.info(f"Refreshed sensor data for {len(tanks)} tanks")
+            return jsonify({"message": "Sensor data refreshed", "count": len(tanks), "timestamp": now.isoformat()})
+    except Exception as e:
+        logger.error(f"Error refreshing sensor data: {e}", exc_info=True)
+        abort(500, description="Failed to refresh sensor data")
+
 # --- Main Execution Block ---
 if __name__ == '__main__':
     port = int(os.environ.get("FLASK_PORT", 5000))
