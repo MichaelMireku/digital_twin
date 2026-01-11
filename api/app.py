@@ -128,6 +128,17 @@ def run_fire_consequence_simulation():
         logger.error(f"Fire simulation error for {asset_id}: {e}", exc_info=True)
         abort(500, "Error running fire simulation.")
 
+def normalize_product(product_service: str) -> str:
+    """Normalize product names for comparison (AGO/PMS)."""
+    if not product_service:
+        return ""
+    product = product_service.upper()
+    if "AGO" in product or "GASOIL" in product or "DIESEL" in product:
+        return "AGO"
+    if "PMS" in product or "GASOLINE" in product or "PETROL" in product:
+        return "PMS"
+    return product
+
 @app.route('/api/v1/simulations/tank-transfer', methods=['POST'])
 @require_api_key
 def run_tank_transfer_simulation():
@@ -145,6 +156,25 @@ def run_tank_transfer_simulation():
 
             if not all([source_tank_meta, dest_tank_meta, pump_meta]):
                 abort(404, description="One or more assets for simulation not found.")
+
+            # Validate asset types
+            if source_tank_meta.get('asset_type') != 'StorageTank':
+                abort(400, description=f"Source '{payload.source_tank_id}' is not a storage tank.")
+            if dest_tank_meta.get('asset_type') != 'StorageTank':
+                abort(400, description=f"Destination '{payload.destination_tank_id}' is not a storage tank.")
+            if pump_meta.get('asset_type') != 'Pump':
+                abort(400, description=f"'{payload.pump_id}' is not a pump.")
+
+            # Validate product compatibility
+            source_product = normalize_product(source_tank_meta.get('product_service', ''))
+            dest_product = normalize_product(dest_tank_meta.get('product_service', ''))
+            pump_product = normalize_product(pump_meta.get('product_service', ''))
+
+            if source_product != dest_product:
+                abort(400, description=f"Product mismatch: source tank contains {source_product}, destination contains {dest_product}. Cannot transfer between different products.")
+
+            if pump_product and pump_product != source_product:
+                abort(400, description=f"Pump '{payload.pump_id}' is configured for {pump_product} but tanks contain {source_product}. Use a compatible pump.")
 
             source_tank_latest = database.get_latest_readings_for_asset(db, payload.source_tank_id, {'volume_gsv': 'calculated'})
             dest_tank_latest = database.get_latest_readings_for_asset(db, payload.destination_tank_id, {'volume_gsv': 'calculated'})

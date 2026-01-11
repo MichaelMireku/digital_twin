@@ -60,7 +60,7 @@ def import_strapping_table(db: Session, asset_id: str, file_path: str):
 
         db.bulk_save_objects(records_to_insert)
         db.commit()
-        logging.info(f"✅ Successfully imported {len(records_to_insert)} strapping records for asset '{asset_id}'.")
+        logging.info(f"Successfully imported {len(records_to_insert)} strapping records for asset '{asset_id}'.")
 
     except Exception as e:
         db.rollback()

@@ -304,6 +304,92 @@ where:
 
 ---
 
+## Simulation Sandbox
+
+The Simulation Sandbox allows operators to run "what-if" scenarios for tank-to-tank product transfers before executing actual operations.
+
+### How It Works
+
+1. Select a source tank, destination tank, and transfer pump
+2. The system validates product compatibility
+3. Simulation runs in 5-minute time steps using pump flow rate
+4. Results show predicted volume changes and alarm conditions
+
+### Transfer Rules
+
+| Rule | Description |
+|------|-------------|
+| Product Match | Source and destination tanks must contain the same product (AGO or PMS) |
+| Pump Compatibility | Pump must be configured for the same product as the tanks |
+| Low Level Limit | Source tank won't drain below 5% capacity |
+| High Level Limit | Destination tank won't fill above 95% capacity |
+
+### Available Pumps by Zone
+
+**Zone A (PH-A01)** - High capacity loading/transfer
+| Pump | Product | Flow Rate |
+|------|---------|-----------|
+| PP-A01, PP-A02, PP-A03 | PMS | 3000 LPM |
+| PP-A04, PP-A05, PP-A06 | AGO | 2500 LPM |
+
+**Zone B (PH-B01)** - Transit transfer
+| Pump | Product | Flow Rate |
+|------|---------|-----------|
+| PP-B01, PP-B02 | AGO | 2000 LPM |
+
+**Zone C (PH-C01)** - Gantry feed
+| Pump | Product | Flow Rate |
+|------|---------|-----------|
+| PP-C01, PP-C02 | AGO | 1500 LPM |
+| PP-C03 | AGO | 2000 LPM |
+| PP-C04, PP-C05 | PMS | 1800 LPM |
+| PP-C06 | PMS | 2200 LPM |
+
+### Tank Inventory
+
+| Zone | Tanks | Product | Capacity | Usage |
+|------|-------|---------|----------|-------|
+| A | TK-A01, TK-A02 | AGO | 15,000,000 L | Operational |
+| A | TK-A03, TK-A04 | PMS | 18,000,000 L | Operational |
+| B | TK-B01 | AGO | 3,000,000 L | Transit |
+| B | TK-B02 | AGO | 8,000,000 L | Transit |
+| B | TK-B03 | AGO | 10,000,000 L | Transit |
+| C | TK-C01, TK-C02 | AGO | 12,000,000 L | Operational |
+| C | TK-C03, TK-C04 | PMS | 12,000,000 L | Operational |
+| D | TK-D01 to TK-D04 | AGO | 10-20M L | Third Party Rental |
+
+### API Usage
+
+```bash
+curl -X POST http://localhost:5000/api/v1/simulations/tank-transfer \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_tank_id": "TK-A01",
+    "destination_tank_id": "TK-A02",
+    "pump_id": "PP-A04"
+  }'
+```
+
+### Response
+
+```json
+{
+  "summary": {
+    "total_time_hours": 2.5,
+    "total_volume_transferred": 375000,
+    "predicted_alerts": ["Source tank TK-A01 will reach Low Level Alarm."]
+  },
+  "results": {
+    "timestamps": [0, 5, 10, ...],
+    "source_tank_volume": [1000000, 987500, 975000, ...],
+    "dest_tank_volume": [500000, 512500, 525000, ...]
+  }
+}
+```
+
+---
+
 ## Contributing
 
 1. Fork the repository

@@ -1,58 +1,40 @@
+# generate_placeholder_strapping.py
+# Generates placeholder strapping table CSV files for demo tanks
+
 import os
 import csv
-import logging
 
-# --- Logging Configuration ---
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# --- Tank Configurations ---
-# This dictionary holds the master data for tank capacities.
+# Tank configurations with fictional IDs and capacities
 TANK_CONFIGS = {
-    'TANK_121': 20000000, 'TANK_122': 20000000, 'TANK_123': 20000000, 'TANK_124': 20000000,
-    'TANK_101': 2600000,  'TANK_102': 7200000,  'TANK_103': 12600000,
-    'TANK_141': 11600000, 'TANK_142': 11600000, 'TANK_143': 11600000, 'TANK_144': 11600000,
-    'TANK_5801': 21700000, 'TANK_5802': 21800000, 'TANK_5803': 21300000, 'TANK_5804': 11300000,
+    'TK-A01': 15000000, 'TK-A02': 15000000, 'TK-A03': 18000000, 'TK-A04': 18000000,
+    'TK-B01': 3000000,  'TK-B02': 8000000,  'TK-B03': 10000000,
+    'TK-C01': 12000000, 'TK-C02': 12000000, 'TK-C03': 12000000, 'TK-C04': 12000000,
+    'TK-D01': 20000000, 'TK-D02': 20000000, 'TK-D03': 20000000, 'TK-D04': 10000000,
 }
 
-# --- Constants ---
-MAX_PLACEHOLDER_LEVEL_MM = 16000.0  # Standard 16-meter height for all tanks
-OUTPUT_DIR = os.path.join("data", "strapping")
-HEADER = ['level_mm', 'volume_litres']  # Standardized lowercase headers
+# Assumed max level in mm for all tanks
+MAX_LEVEL_MM = 16000
+LEVEL_INCREMENT_MM = 100
 
-def generate_strapping_data(max_capacity_litres: float, max_level_mm: float, num_points: int = 40) -> list:
-    """Generates a list of (level, volume) tuples with a slight curve for realism."""
-    data = []
-    for i in range(num_points + 1):
-        level_fraction = i / num_points
-        # Using a slight power curve (x^1.05) simulates a more realistic tank shape than a perfect cylinder.
-        volume_fraction = level_fraction ** 1.05 
-        
-        level = round(level_fraction * max_level_mm, 2)
-        volume = round(volume_fraction * max_capacity_litres, 0)
-        
-        data.append((level, volume))
-        
-    return data
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'data', 'strapping')
 
-def main():
-    """Main function to create the strapping CSV files."""
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-        logger.info(f"Created directory: {OUTPUT_DIR}")
+def generate_strapping_csv(tank_id: str, capacity_litres: int):
+    """Generates a linear strapping table CSV for a given tank."""
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    file_path = os.path.join(OUTPUT_DIR, f"{tank_id}.csv")
+    
+    with open(file_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['level_mm', 'volume_litres'])
         
-    for tank_id, capacity_l in TANK_CONFIGS.items():
-        filepath = os.path.join(OUTPUT_DIR, f"{tank_id}.csv")
-        strapping_data = generate_strapping_data(capacity_l, MAX_PLACEHOLDER_LEVEL_MM)
-        
-        try:
-            with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(HEADER)
-                writer.writerows(strapping_data)
-            logger.info(f"✅ Generated placeholder strapping file: {filepath}")
-        except IOError as e:
-            logger.error(f"Could not write to file {filepath}: {e}")
+        for level in range(0, MAX_LEVEL_MM + LEVEL_INCREMENT_MM, LEVEL_INCREMENT_MM):
+            volume = (level / MAX_LEVEL_MM) * capacity_litres
+            writer.writerow([level, round(volume, 2)])
+    
+    print(f"Generated: {file_path}")
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    print(f"Generating strapping tables in: {OUTPUT_DIR}")
+    for tank_id, capacity in TANK_CONFIGS.items():
+        generate_strapping_csv(tank_id, capacity)
+    print("Done!")

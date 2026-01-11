@@ -1,64 +1,59 @@
 # utils/depot_layout.py 
-
-# This file defines the static 2D coordinates for assets in the depot layout. 
-# UPDATED: Added a dedicated 'pump_stations' dictionary for visual symbols. 
-# The layout uses a 120x105 grid, where (0,0) is the bottom-left corner. 
+# Fictional depot layout for demonstration purposes
+# All positions and dimensions are randomized
 
 DEPOT_LAYOUT = { 
     "tanks": { 
-        # --- Area A --- 
-        "TANK_121": {"x": 22, "y": 80, "radius": 7.2}, 
-        "TANK_122": {"x": 22, "y": 68, "radius": 7.2}, 
-        "TANK_123": {"x": 13, "y": 80, "radius": 7.2}, 
-        "TANK_124": {"x": 13, "y": 68, "radius": 7.2}, 
+        # Zone A - Northwest cluster
+        "TK-A01": {"x": 18, "y": 85, "radius": 6.5}, 
+        "TK-A02": {"x": 32, "y": 85, "radius": 6.5}, 
+        "TK-A03": {"x": 18, "y": 70, "radius": 7.0}, 
+        "TK-A04": {"x": 32, "y": 70, "radius": 7.0}, 
 
-        # --- Area B --- 
-        "TANK_101": {"x": 32, "y": 80, "radius": 4}, 
-        "TANK_102": {"x": 42, "y": 80, "radius": 5}, 
-        "TANK_103": {"x": 32, "y": 68, "radius": 6}, 
+        # Zone B - Northeast cluster
+        "TK-B01": {"x": 55, "y": 90, "radius": 4.5}, 
+        "TK-B02": {"x": 68, "y": 90, "radius": 5.0}, 
+        "TK-B03": {"x": 62, "y": 75, "radius": 5.5}, 
 
-        # --- Area C --- 
-        "TANK_143": {"x": 80, "y": 80, "radius": 6}, 
-        "TANK_141": {"x": 90, "y": 80, "radius": 6}, 
-        "TANK_144": {"x": 80, "y": 68, "radius": 6}, 
-        "TANK_142": {"x": 90, "y": 68, "radius": 6}, 
+        # Zone C - Central-East cluster
+        "TK-C01": {"x": 85, "y": 65, "radius": 5.5}, 
+        "TK-C02": {"x": 98, "y": 65, "radius": 5.5}, 
+        "TK-C03": {"x": 85, "y": 50, "radius": 5.5}, 
+        "TK-C04": {"x": 98, "y": 50, "radius": 5.5}, 
 
-        # --- Area AT&V --- 
-        "TANK_5801": {"x": 102.5, "y": 90, "radius": 7.5}, 
-        "TANK_5802": {"x": 114, "y": 95, "radius": 7.5}, 
-        "TANK_5803": {"x": 114, "y": 83, "radius": 7.5}, 
-        "TANK_5804": {"x": 102.5, "y": 78, "radius": 6}, 
+        # Zone D - South cluster
+        "TK-D01": {"x": 25, "y": 35, "radius": 7.0}, 
+        "TK-D02": {"x": 42, "y": 35, "radius": 7.0}, 
+        "TK-D03": {"x": 25, "y": 18, "radius": 7.0}, 
+        "TK-D04": {"x": 42, "y": 18, "radius": 5.5}, 
     }, 
     "gantries": [ 
-        {"id": "Loading Gantry", "x": 53, "y": 50, "width": 18, "height": 6}, 
+        {"id": "Loading Bay", "x": 75, "y": 25, "width": 20, "height": 8}, 
     ], 
     "buildings": { 
-        "Admin Area": {"x": 15, "y": 15, "width": 15, "height": 10, "size": 10}, 
-        "Control Room": {"x": 45, "y": 30, "width": 15, "height": 8, "size": 10}, 
-        "Ullage Area": {"x": 65, "y": 80, "width": 8, "height": 6, "size": 9}, 
-        "PL Receipt Area": {"x": 103, "y": 68, "width": 12, "height": 6, "size": 9}, 
+        "Admin Block": {"x": 108, "y": 90, "width": 12, "height": 8, "size": 9}, 
+        "Control Room": {"x": 60, "y": 45, "width": 10, "height": 6, "size": 9}, 
+        "Operations": {"x": 95, "y": 85, "width": 8, "height": 5, "size": 8}, 
+        "Maintenance": {"x": 108, "y": 25, "width": 10, "height": 6, "size": 8}, 
     }, 
     "features": { 
-        "MAIN HIGHWAY": {"x": 55, "y": 5, "width": 110, "height": 8, "color": "#636363"}, 
-        "Water Tank 1": {"x": 40, "y": 40, "width": 5, "height": 5, "color": "#add8e6"}, 
-        "Water Tank 2": {"x": 109, "y": 77, "width": 4, "height": 4, "color": "#add8e6"}, 
-    
-        "Assembly Point 1": {"x": 5, "y": 85, "width": 4, "height": 4, "color": "green"}, 
-        "Assembly Point 2": {"x": 40, "y": 50, "width": 4, "height": 4, "color": "green"}, 
-        "Assembly Point 3": {"x": 70, "y": 90, "width": 4, "height": 4, "color": "green"}, 
-        "Assembly Point 4": {"x": 70, "y": 40, "width": 4, "height": 4, "color": "green"}, 
+        "ACCESS ROAD": {"x": 60, "y": 100, "width": 100, "height": 6, "color": "#636363"}, 
+        "Fire Water 1": {"x": 50, "y": 58, "width": 4, "height": 4, "color": "#add8e6"}, 
+        "Fire Water 2": {"x": 75, "y": 78, "width": 4, "height": 4, "color": "#add8e6"}, 
+        "Muster Point 1": {"x": 8, "y": 55, "width": 3, "height": 3, "color": "green"}, 
+        "Muster Point 2": {"x": 115, "y": 55, "width": 3, "height": 3, "color": "green"}, 
+        "Muster Point 3": {"x": 60, "y": 8, "width": 3, "height": 3, "color": "green"}, 
     }, 
     "pump_stations": { 
-        "Pump - A": {"x": 22, "y": 74}, 
-        "Pump-B": {"x": 41, "y": 68}, 
-        "TAPP Pumps": {"x": 32, "y": 61}, 
-        "Pump - C": {"x": 85, "y": 85}, 
-        "Pump-AT&V": {"x": 97, "y": 76}, 
+        "Pump House A": {"x": 25, "y": 55}, 
+        "Pump House B": {"x": 62, "y": 82}, 
+        "Pump House C": {"x": 92, "y": 75}, 
+        "Transfer Station": {"x": 55, "y": 30}, 
     }, 
     "labels": { 
-        "Area A": {"x": 17.5, "y": 88, "size": 14}, 
-        "Area B": {"x": 53, "y": 98, "size": 14}, 
-        "Area C": {"x": 85, "y": 85, "size": 14}, 
-        "Area AT&V": {"x": 95, "y": 100, "size": 14}, 
+        "Zone A": {"x": 25, "y": 93, "size": 12}, 
+        "Zone B": {"x": 62, "y": 98, "size": 12}, 
+        "Zone C": {"x": 92, "y": 73, "size": 12}, 
+        "Zone D": {"x": 33, "y": 42, "size": 12}, 
     } 
-} 
+}

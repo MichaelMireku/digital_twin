@@ -51,309 +51,610 @@ if not logger.handlers:
 
 # --- Custom CSS Styles ---
 CUSTOM_CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #0ea5e9;
-    --primary-dark: #0284c7;
-    --success: #22c55e;
+    --primary: #3b82f6;
+    --primary-light: #60a5fa;
+    --primary-dark: #2563eb;
+    --accent: #8b5cf6;
+    --success: #10b981;
+    --success-light: #34d399;
     --warning: #f59e0b;
+    --warning-light: #fbbf24;
     --danger: #ef4444;
-    --dark-bg: #0f172a;
-    --card-bg: #1e293b;
-    --card-border: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
+    --danger-light: #f87171;
+    --dark-bg: #0a0f1a;
+    --card-bg: #111827;
+    --card-bg-hover: #1f2937;
+    --card-border: #1f2937;
+    --card-border-hover: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 #111827;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #111827;
+    border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    background: #0f172a !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    background: var(--dark-bg) !important;
     min-height: 100vh;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Professional Navbar */
 .navbar {
-    background: #1e293b !important;
-    border-bottom: 1px solid #334155;
-    padding: 0.75rem 2rem !important;
+    background: rgba(17, 24, 39, 0.95) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.875rem 2rem !important;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar-brand {
-    font-weight: 600 !important;
-    font-size: 1.25rem !important;
-    color: #f1f5f9 !important;
+    font-weight: 700 !important;
+    font-size: 1.35rem !important;
+    color: var(--text-primary) !important;
+    letter-spacing: -0.025em;
 }
 
+.navbar-brand i {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Enhanced KPI Cards */
 .kpi-card {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 1.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
     height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .kpi-card:hover {
-    border-color: #0ea5e9;
-    transition: border-color 0.2s ease;
+    border-color: var(--card-border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
 }
 
 .kpi-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
     color: #fff;
+    box-shadow: var(--shadow-md);
+    position: relative;
+}
+
+.kpi-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: inherit;
+    filter: blur(12px);
+    opacity: 0.4;
+    z-index: -1;
 }
 
 .kpi-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 0.25rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
 }
 
 .kpi-label {
-    font-size: 0.8rem;
-    color: #94a3b8;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.75px;
+    font-weight: 500;
 }
 
-.glass-card {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 1.25rem;
-}
-
-.section-title {
-    color: #f1f5f9;
+.kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
     font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.75rem;
+}
+
+.kpi-trend.trend-up {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.kpi-trend.trend-down {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+/* Glass Card Effect */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    border-color: var(--card-border-hover);
+}
+
+/* Section Titles */
+.section-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    letter-spacing: -0.01em;
 }
 
 .section-title::before {
     content: '';
-    width: 3px;
-    height: 18px;
-    background: #0ea5e9;
+    width: 4px;
+    height: 20px;
+    background: var(--gradient-primary);
     border-radius: 2px;
 }
 
+/* Alert Items */
 .alert-item {
-    background: #334155;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    border-left: 3px solid;
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid;
+    transition: all 0.2s ease;
 }
 
 .alert-item:hover {
-    background: #3f4f63;
+    background: rgba(31, 41, 55, 0.8);
+    transform: translateX(4px);
 }
 
-.alert-critical { border-left-color: #ef4444; }
-.alert-warning { border-left-color: #f59e0b; }
-.alert-info { border-left-color: #0ea5e9; }
+.alert-critical { border-left-color: var(--danger); }
+.alert-warning { border-left-color: var(--warning); }
+.alert-info { border-left-color: var(--primary); }
 
+/* Weather Widget */
 .weather-widget {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    border-radius: 12px;
-    padding: 1.25rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
     color: #fff;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.weather-widget::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .weather-temp {
-    font-size: 2.25rem;
-    font-weight: 700;
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .weather-desc {
-    font-size: 0.85rem;
-    opacity: 0.9;
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 500;
 }
 
+/* Status Badges */
 .status-badge {
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.status-online { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-.status-offline { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-.status-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-
-.nav-tabs {
-    border: none !important;
-    background: #1e293b !important;
-    border-radius: 8px;
-    padding: 0.4rem;
-    margin: 1rem 2rem;
+.status-online { 
+    background: rgba(16, 185, 129, 0.15); 
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.nav-tabs .nav-link {
-    border: none !important;
-    color: #94a3b8 !important;
-    border-radius: 6px !important;
-    padding: 0.6rem 1.25rem !important;
-    font-weight: 500;
-    font-size: 0.9rem;
-    background: transparent !important;
+.status-offline { 
+    background: rgba(239, 68, 68, 0.15); 
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.nav-tabs .nav-link:hover {
-    color: #f1f5f9 !important;
-    background: #334155 !important;
+.status-warning { 
+    background: rgba(245, 158, 11, 0.15); 
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-.nav-tabs .nav-link.active {
-    background: #0ea5e9 !important;
-    color: #fff !important;
-}
-
-.tab-container {
-    background: #1e293b !important;
-}
-
-.custom-tabs {
-    background: #1e293b !important;
-    border: none !important;
-}
-
-.custom-tabs .tab {
-    background: transparent !important;
-    border: none !important;
-    color: #94a3b8 !important;
-}
-
-.custom-tabs .tab--selected {
-    background: #0ea5e9 !important;
-    color: #fff !important;
-    border: none !important;
-}
-
-.dash-spreadsheet-container .dash-spreadsheet-inner th {
-    background: #334155 !important;
-    color: #f1f5f9 !important;
-    font-weight: 600;
-    border: none !important;
-    padding: 0.75rem !important;
-}
-
-.dash-spreadsheet-container .dash-spreadsheet-inner td {
-    background: #1e293b !important;
-    color: #e2e8f0 !important;
-    border: none !important;
-    border-bottom: 1px solid #334155 !important;
-    padding: 0.6rem 0.75rem !important;
-}
-
-.dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
-    background: #334155 !important;
-}
-
-.btn-primary-gradient {
-    background: #0ea5e9;
-    border: none;
-    border-radius: 8px;
-    padding: 0.6rem 1.25rem;
-    font-weight: 600;
-    color: #fff;
-}
-
-.btn-primary-gradient:hover {
-    background: #0284c7;
-}
-
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #22c55e;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
-    70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-
-.tank-legend {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    color: #94a3b8;
-}
-
-.legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.Select-control {
-    background: #334155 !important;
-    border: 1px solid #475569 !important;
-    border-radius: 6px !important;
-}
-
-.Select-value-label, .Select-placeholder {
-    color: #e2e8f0 !important;
-}
-
-/* Dash Tabs Specific Styling */
+/* Professional Tabs */
 .tab-parent {
-    background: #1e293b !important;
-    border-radius: 8px;
-    margin: 1rem 2rem;
-    padding: 0.4rem;
+    background: var(--card-bg) !important;
+    border-radius: 12px;
+    margin: 1.25rem 2rem;
+    padding: 0.5rem;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
 }
 
 .tab {
     background: transparent !important;
     border: none !important;
-    color: #94a3b8 !important;
-    padding: 0.6rem 1.25rem !important;
+    color: var(--text-secondary) !important;
+    padding: 0.75rem 1.5rem !important;
     font-weight: 500 !important;
-    font-size: 0.9rem !important;
-    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: -0.01em;
 }
 
 .tab:hover {
-    background: #334155 !important;
-    color: #f1f5f9 !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: var(--text-primary) !important;
 }
 
 .tab--selected {
-    background: #0ea5e9 !important;
+    background: var(--gradient-primary) !important;
     color: #fff !important;
     border: none !important;
-    border-bottom: none !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
 }
 
-.tab-content {
+/* Data Tables */
+.dash-spreadsheet-container .dash-spreadsheet-inner th {
+    background: rgba(31, 41, 55, 0.8) !important;
+    color: var(--text-primary) !important;
+    font-weight: 600;
     border: none !important;
+    padding: 1rem !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dash-spreadsheet-container .dash-spreadsheet-inner td {
+    background: var(--card-bg) !important;
+    color: var(--text-secondary) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--card-border) !important;
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem;
+}
+
+.dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
+    background: var(--card-bg-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Buttons */
+.btn-primary-gradient {
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary-gradient:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-primary-gradient:active {
+    transform: translateY(0);
+}
+
+/* Pulse Animation */
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+        transform: scale(1.05);
+    }
+}
+
+/* Tank Legend */
+.tank-legend {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--card-border);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Dropdown Styling */
+.Select-control {
+    background: var(--card-bg-hover) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 10px !important;
+    min-height: 44px !important;
+}
+
+.Select-control:hover {
+    border-color: var(--primary) !important;
+}
+
+.Select-value-label, .Select-placeholder {
+    color: var(--text-secondary) !important;
+}
+
+.Select-menu-outer {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow-lg) !important;
+    margin-top: 4px !important;
+}
+
+.Select-option {
     background: transparent !important;
+    color: var(--text-secondary) !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.Select-option:hover, .Select-option.is-focused {
+    background: var(--card-bg-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+.Select-option.is-selected {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: var(--primary-light) !important;
+}
+
+/* Input Fields */
+.form-control, input[type="text"], textarea {
+    background: var(--card-bg-hover) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, input[type="text"]:focus, textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+    outline: none !important;
+}
+
+/* Date Picker */
+.DateInput_input {
+    background: var(--card-bg-hover) !important;
+    color: var(--text-primary) !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+}
+
+.DateRangePickerInput {
+    background: var(--card-bg-hover) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 10px !important;
+}
+
+/* Loading Spinner */
+._dash-loading {
+    background: transparent !important;
+}
+
+.dash-spinner {
+    border-color: var(--primary) !important;
+    border-top-color: transparent !important;
+}
+
+/* Modal Styling */
+.modal-content {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--card-border) !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+.modal-body {
+    padding: 1.5rem !important;
+    color: var(--text-secondary);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--card-border) !important;
+    padding: 1rem 1.5rem !important;
+}
+
+.modal-title {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .tab-parent {
+        margin: 1rem;
+        overflow-x: auto;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+    
+    .glass-card {
+        padding: 1rem;
+    }
+}
+
+/* Custom Scrollbar for specific containers */
+.alert-scroll, .log-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Hover Effects for Interactive Elements */
+.interactive-element {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.interactive-element:hover {
+    transform: scale(1.02);
+}
+
+/* Glow Effects */
+.glow-primary {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-success {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.glow-warning {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.glow-danger {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 """
 
@@ -417,78 +718,147 @@ def get_weather_icon(code):
 
 
 # --- UI Component Builders ---
-def build_kpi_card(title, value, unit, icon, bg_color, trend=None, trend_value=None):
-    """Build a modern KPI card with icon and optional trend indicator."""
+def build_kpi_card(title, value, unit, icon, bg_color, trend=None, trend_value=None, subtitle=None):
+    """Build a professional KPI card with icon, trend indicator, and optional subtitle."""
     trend_element = None
     if trend and trend_value:
         trend_class = "trend-up" if trend == "up" else "trend-down"
-        trend_icon = "fa-arrow-up" if trend == "up" else "fa-arrow-down"
+        trend_icon = "fa-trending-up" if trend == "up" else "fa-trending-down"
         trend_element = html.Div([
             html.I(className=f"fas {trend_icon} me-1"),
             html.Span(trend_value)
         ], className=f"kpi-trend {trend_class}")
     
+    # Create gradient background based on color
+    gradient_map = {
+        "#0ea5e9": "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+        "#3b82f6": "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+        "#22c55e": "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        "#10b981": "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        "#f59e0b": "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+        "#8b5cf6": "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+        "#ef4444": "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    }
+    gradient = gradient_map.get(bg_color, f"linear-gradient(135deg, {bg_color} 0%, {bg_color} 100%)")
+    
     return html.Div([
         html.Div([
-            html.I(className=f"fas {icon}")
-        ], className=f"kpi-icon", style={"background": bg_color}),
-        html.Div(f"{value} {unit}", className="kpi-value"),
-        html.Div(title, className="kpi-label"),
+            html.Div([
+                html.I(className=f"fas {icon}")
+            ], className="kpi-icon", style={"background": gradient}),
+            html.Div([
+                html.Div([
+                    html.Span(value, style={"fontSize": "2rem", "fontWeight": "800", "letterSpacing": "-0.025em"}),
+                    html.Span(f" {unit}" if unit else "", style={"fontSize": "1rem", "fontWeight": "500", "color": "#9ca3af", "marginLeft": "0.25rem"})
+                ], className="kpi-value", style={"marginBottom": "0.25rem"}),
+                html.Div(title, className="kpi-label"),
+                html.Div(subtitle, style={"fontSize": "0.7rem", "color": "#6b7280", "marginTop": "0.25rem"}) if subtitle else None,
+            ], style={"flex": "1"})
+        ], className="d-flex align-items-start gap-3"),
         trend_element
     ], className="kpi-card")
 
 
 def build_weather_widget(weather_data):
-    """Build an attractive weather widget."""
+    """Build a professional weather widget with glassmorphism effect."""
     return html.Div([
         html.Div([
-            html.I(className=f"fas {weather_data.get('icon', 'fa-cloud')} fa-3x mb-3"),
+            html.Div([
+                html.I(className=f"fas {weather_data.get('icon', 'fa-cloud')} fa-3x", 
+                       style={"filter": "drop-shadow(0 4px 6px rgba(0,0,0,0.3))"}),
+            ], className="mb-3"),
             html.Div(f"{weather_data.get('temp', '--')}°C", className="weather-temp"),
-            html.Div(weather_data.get('description', 'Unknown'), className="weather-desc mb-2"),
+            html.Div(weather_data.get('description', 'Unknown'), className="weather-desc mb-3"),
         ]),
-        html.Hr(style={"opacity": "0.3"}),
+        html.Div(style={"height": "1px", "background": "rgba(255,255,255,0.2)", "margin": "0.75rem 0"}),
         html.Div([
             html.Div([
-                html.I(className="fas fa-wind me-2"),
-                html.Span(f"{weather_data.get('wind_speed', '--')} km/h")
-            ], className="d-flex align-items-center justify-content-center mb-1"),
+                html.Div([
+                    html.I(className="fas fa-wind", style={"fontSize": "1rem", "opacity": "0.8"}),
+                ], style={"marginBottom": "0.25rem"}),
+                html.Div(f"{weather_data.get('wind_speed', '--')}", style={"fontWeight": "700", "fontSize": "1.1rem"}),
+                html.Div("km/h", style={"fontSize": "0.7rem", "opacity": "0.7"})
+            ], className="text-center", style={"flex": "1"}),
+            html.Div(style={"width": "1px", "background": "rgba(255,255,255,0.2)"}),
             html.Div([
-                html.I(className="fas fa-droplet me-2"),
-                html.Span(f"{weather_data.get('humidity', '--')}%")
-            ], className="d-flex align-items-center justify-content-center"),
-        ], style={"fontSize": "0.85rem"})
+                html.Div([
+                    html.I(className="fas fa-droplet", style={"fontSize": "1rem", "opacity": "0.8"}),
+                ], style={"marginBottom": "0.25rem"}),
+                html.Div(f"{weather_data.get('humidity', '--')}", style={"fontWeight": "700", "fontSize": "1.1rem"}),
+                html.Div("%", style={"fontSize": "0.7rem", "opacity": "0.7"})
+            ], className="text-center", style={"flex": "1"}),
+        ], className="d-flex align-items-center", style={"padding": "0.5rem 0"})
     ], className="weather-widget")
 
 
 def build_alert_item(alert):
-    """Build a styled alert item."""
+    """Build a professional styled alert item."""
     severity = alert.get('severity', 'warning').lower()
     severity_class = f"alert-{severity}" if severity in ['critical', 'warning', 'info'] else 'alert-warning'
-    icon = "fa-circle-exclamation" if severity == 'critical' else "fa-triangle-exclamation" if severity == 'warning' else "fa-circle-info"
+    
+    icon_map = {
+        'critical': ('fa-circle-exclamation', '#ef4444'),
+        'warning': ('fa-triangle-exclamation', '#f59e0b'),
+        'info': ('fa-circle-info', '#3b82f6')
+    }
+    icon, color = icon_map.get(severity, ('fa-triangle-exclamation', '#f59e0b'))
+    
+    time_ago = alert.get('created_at', '')
+    if time_ago:
+        try:
+            from datetime import datetime
+            created = datetime.fromisoformat(time_ago.replace('Z', '+00:00'))
+            diff = datetime.now(created.tzinfo) - created if created.tzinfo else datetime.now() - created
+            if diff.days > 0:
+                time_ago = f"{diff.days}d ago"
+            elif diff.seconds > 3600:
+                time_ago = f"{diff.seconds // 3600}h ago"
+            else:
+                time_ago = f"{diff.seconds // 60}m ago"
+        except:
+            time_ago = ""
     
     return html.Div([
         html.Div([
-            html.I(className=f"fas {icon} me-2", style={"color": "#f39c12" if severity == 'warning' else "#e74c3c"}),
-            html.Span(alert.get('alert_name', 'Alert'), style={"fontWeight": "600", "color": "#fff"})
-        ], className="d-flex align-items-center mb-1"),
-        html.P(alert.get('message', ''), className="mb-0", style={"fontSize": "0.85rem", "color": "#a0a0a0"})
+            html.Div([
+                html.I(className=f"fas {icon}", style={"color": color, "fontSize": "1rem"}),
+            ], style={
+                "width": "32px", "height": "32px", "borderRadius": "8px",
+                "background": f"rgba({int(color[1:3], 16)}, {int(color[3:5], 16)}, {int(color[5:7], 16)}, 0.15)",
+                "display": "flex", "alignItems": "center", "justifyContent": "center", "flexShrink": "0"
+            }),
+            html.Div([
+                html.Div([
+                    html.Span(alert.get('alert_name', 'Alert'), style={"fontWeight": "600", "color": "#f9fafb", "fontSize": "0.875rem"}),
+                    html.Span(time_ago, style={"fontSize": "0.7rem", "color": "#6b7280", "marginLeft": "auto"}) if time_ago else None
+                ], className="d-flex align-items-center justify-content-between"),
+                html.P(alert.get('message', ''), className="mb-0", style={"fontSize": "0.8rem", "color": "#9ca3af", "marginTop": "0.25rem", "lineHeight": "1.4"})
+            ], style={"flex": "1", "minWidth": "0"})
+        ], className="d-flex align-items-start gap-3")
     ], className=f"alert-item {severity_class}")
 
 
 def build_alerts_section(alerts: list):
-    """Build the alerts section with styled items."""
+    """Build the alerts section with professional styled items."""
     if not alerts:
         return html.Div([
             html.Div([
-                html.I(className="fas fa-check-circle fa-2x mb-2", style={"color": "#38ef7d"}),
-                html.P("All systems operational", className="mb-0", style={"color": "#a0a0a0"})
+                html.Div([
+                    html.I(className="fas fa-shield-check", style={"fontSize": "2.5rem", "color": "#10b981"})
+                ], style={
+                    "width": "72px", "height": "72px", "borderRadius": "50%",
+                    "background": "rgba(16, 185, 129, 0.1)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "margin": "0 auto 1rem"
+                }),
+                html.P("All Systems Operational", style={"color": "#f9fafb", "fontWeight": "600", "marginBottom": "0.25rem"}),
+                html.P("No active alerts at this time", style={"color": "#6b7280", "fontSize": "0.85rem", "marginBottom": "0"})
             ], className="text-center py-4")
         ])
-    return html.Div([build_alert_item(a) for a in alerts[:5]])
+    return html.Div([build_alert_item(a) for a in alerts[:5]], className="alert-scroll")
 
 
 def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dcc.Graph:
-    """Build the depot HMI visualization with improved styling."""
+    """Build the professional depot HMI visualization."""
     fig = go.Figure()
     
     # Draw Buildings with better styling
@@ -497,13 +867,13 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
             type="rect",
             x0=b['x']-b['width']/2, y0=b['y']-b['height']/2,
             x1=b['x']+b['width']/2, y1=b['y']+b['height']/2,
-            line=dict(color="#334155", width=2),
-            fillcolor="#1e293b",
+            line=dict(color="#374151", width=2),
+            fillcolor="#1f2937",
             layer="below"
         )
         fig.add_annotation(
             x=b['x'], y=b['y'], text=name, showarrow=False,
-            font=dict(size=b.get('size', 8), color="#94a3b8", family="Inter")
+            font=dict(size=b.get('size', 8), color="#9ca3af", family="Inter")
         )
 
     # Draw Features
@@ -524,19 +894,19 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
         x, y, w, h = gantry['x'], gantry['y'], gantry['width'], gantry['height']
         fig.add_shape(
             type="rect", x0=x-w/2, y0=y-h/2, x1=x+w/2, y1=y+h/2,
-            line=dict(color="#475569", width=2), fillcolor="#334155", layer="below"
+            line=dict(color="#4b5563", width=2), fillcolor="#374151", layer="below"
         )
-        fig.add_annotation(x=x, y=y, text=gantry['id'], showarrow=False, font=dict(size=9, color="#f1f5f9"))
+        fig.add_annotation(x=x, y=y, text=gantry['id'], showarrow=False, font=dict(size=9, color="#f9fafb"))
 
     # Draw Pump Stations
     for name, p_coords in DEPOT_LAYOUT.get('pump_stations', {}).items():
         fig.add_trace(go.Scatter(
             x=[p_coords['x']], y=[p_coords['y']], mode='markers',
-            marker=dict(symbol='diamond', color='#f59e0b', size=18, line=dict(width=2, color='#fff')),
+            marker=dict(symbol='diamond', color='#f59e0b', size=20, line=dict(width=2, color='rgba(255,255,255,0.3)')),
             hoverinfo="text", hovertext=f"<b>{name}</b>", name=name
         ))
 
-    # Draw Tanks with gradient colors based on level
+    # Draw Tanks with professional gradient colors based on level
     tanks = [a for a in assets_data if a.get('asset_type') == 'StorageTank']
     tank_coords = DEPOT_LAYOUT.get('tanks', {})
     
@@ -549,34 +919,39 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
         level_pct = tank.get('latest_dynamic_state', {}).get('level_percentage', {}).get('value', 0)
         product = tank.get('product_service', 'Unknown')
         
-        # Color based on level status
+        # Professional color scheme based on level status
         if level_pct > 90:
-            fill_color = "#e74c3c"  # Critical high
+            fill_color = "#ef4444"  # Critical high - red
             status = "HIGH"
+            status_color = "#fecaca"
         elif level_pct > 80:
-            fill_color = "#f39c12"  # Warning
+            fill_color = "#f59e0b"  # Warning - amber
             status = "WARN"
+            status_color = "#fde68a"
         elif level_pct > 20:
-            fill_color = "#27ae60"  # Normal
+            fill_color = "#10b981"  # Normal - emerald
             status = "OK"
+            status_color = "#a7f3d0"
         elif level_pct > 10:
-            fill_color = "#3498db"  # Low
+            fill_color = "#3b82f6"  # Low - blue
             status = "LOW"
+            status_color = "#bfdbfe"
         else:
-            fill_color = "#9b59b6"  # Critical low
+            fill_color = "#8b5cf6"  # Critical low - purple
             status = "CRIT"
+            status_color = "#ddd6fe"
         
         radius = coords.get('radius', 5.0)
-        marker_size = 20 + (radius * 2.5)
+        marker_size = 22 + (radius * 2.5)
         
         fig.add_trace(go.Scatter(
             x=[coords['x']], y=[coords['y']], mode='markers+text',
             marker=dict(
-                size=marker_size, color=fill_color, opacity=0.9,
-                line=dict(width=3, color='rgba(255,255,255,0.3)'),
+                size=marker_size, color=fill_color, opacity=0.95,
+                line=dict(width=3, color='rgba(255,255,255,0.2)'),
                 symbol='circle'
             ),
-            text=f"<b>{asset_id.replace('TANK_','T-')}</b>",
+            text=f"<b>{asset_id.replace('TK-','')}</b>",
             textposition="middle center",
             hoverinfo="text",
             hovertext=f"<b>{asset_id}</b><br>Product: {product}<br>Level: {level_pct:.1f}%<br>Status: {status}",
@@ -589,7 +964,7 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
     for name, l in DEPOT_LAYOUT.get('labels', {}).items():
         fig.add_annotation(
             x=l['x'], y=l['y'], text=f"<b>{name}</b>", showarrow=False,
-            font=dict(size=l.get('size', 12), color="#0ea5e9", family="Inter")
+            font=dict(size=l.get('size', 12), color="#3b82f6", family="Inter")
         )
 
     # Fire Simulation Radii
@@ -600,9 +975,9 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
             radii = fire_sim_results.get('impact_radii_meters', {})
             scale_factor = (source_coords.get('radius', 5.0) * 2) / 20.0
             colors = {
-                "equipment_damage": "rgba(231,76,60,0.3)",
-                "second_degree_burns": "rgba(243,156,18,0.3)",
-                "pain_threshold": "rgba(241,196,15,0.3)"
+                "equipment_damage": "rgba(239,68,68,0.25)",
+                "second_degree_burns": "rgba(245,158,11,0.25)",
+                "pain_threshold": "rgba(251,191,36,0.25)"
             }
             for effect, radius_m in sorted(radii.items(), key=lambda item: item[1], reverse=True):
                 fig.add_shape(
@@ -620,16 +995,16 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
         title=None,
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 125]),
         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 115]),
-        plot_bgcolor='#0f172a',
+        plot_bgcolor='#0a0f1a',
         paper_bgcolor='rgba(0,0,0,0)',
         showlegend=False,
         height=650,
         margin=dict(l=10, r=10, t=10, b=10),
         hoverlabel=dict(
-            bgcolor="#1e293b",
+            bgcolor="#1f2937",
             font_size=12,
             font_family="Inter",
-            bordercolor="#0ea5e9"
+            bordercolor="#3b82f6"
         )
     )
     
@@ -637,7 +1012,7 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
 
 
 def build_inventory_chart(tanks_data):
-    """Build a donut chart showing inventory by product."""
+    """Build a professional donut chart showing inventory by product."""
     inventory_by_product = {}
     for tank in tanks_data:
         product = tank.get('product_service', 'Unknown')
@@ -645,36 +1020,74 @@ def build_inventory_chart(tanks_data):
         inventory_by_product[product] = inventory_by_product.get(product, 0) + volume
     
     if not inventory_by_product:
-        return html.Div("No inventory data", className="text-center text-muted py-4")
+        return html.Div([
+            html.I(className="fas fa-database", style={"fontSize": "2rem", "color": "#374151"}),
+            html.P("No inventory data", style={"color": "#6b7280", "marginTop": "0.5rem"})
+        ], className="text-center py-4")
     
     labels = list(inventory_by_product.keys())
     values = [v/1e6 for v in inventory_by_product.values()]
-    colors = [PRODUCT_COLORS.get(p, "#95a5a6") for p in labels]
+    
+    # Professional color palette
+    color_palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899']
+    colors = [color_palette[i % len(color_palette)] for i in range(len(labels))]
     
     fig = go.Figure(data=[go.Pie(
         labels=labels,
         values=values,
-        hole=0.6,
-        marker=dict(colors=colors, line=dict(color='#1a1a2e', width=2)),
+        hole=0.65,
+        marker=dict(
+            colors=colors, 
+            line=dict(color='#111827', width=3)
+        ),
         textinfo='percent',
-        textfont=dict(size=11, color='#fff'),
-        hovertemplate="<b>%{label}</b><br>%{value:.2f}M Litres<br>%{percent}<extra></extra>"
+        textfont=dict(size=11, color='#fff', family='Inter'),
+        hovertemplate="<b>%{label}</b><br>%{value:.2f}M Litres<br>%{percent}<extra></extra>",
+        direction='clockwise',
+        sort=False
     )])
+    
+    total = sum(values)
     
     fig.update_layout(
         showlegend=True,
         legend=dict(
-            orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5,
-            font=dict(size=10, color="#a0a0a0")
+            orientation="h", 
+            yanchor="bottom", 
+            y=-0.25, 
+            xanchor="center", 
+            x=0.5,
+            font=dict(size=10, color="#9ca3af", family='Inter'),
+            itemsizing='constant'
         ),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=20, r=20, t=20, b=60),
+        margin=dict(l=10, r=10, t=10, b=70),
         height=280,
-        annotations=[dict(
-            text=f"<b>{sum(values):.1f}M</b><br>Total",
-            x=0.5, y=0.5, font_size=14, font_color="#fff", showarrow=False
-        )]
+        annotations=[
+            dict(
+                text=f"<b>{total:.1f}M</b>",
+                x=0.5, y=0.55, 
+                font_size=20, 
+                font_color="#f9fafb",
+                font_family='Inter',
+                showarrow=False
+            ),
+            dict(
+                text="Litres",
+                x=0.5, y=0.4, 
+                font_size=11, 
+                font_color="#6b7280",
+                font_family='Inter',
+                showarrow=False
+            )
+        ],
+        hoverlabel=dict(
+            bgcolor="#1f2937",
+            font_size=12,
+            font_family="Inter",
+            bordercolor="#374151"
+        )
     )
     
     return dcc.Graph(figure=fig, config={'displayModeBar': False})
@@ -682,23 +1095,23 @@ def build_inventory_chart(tanks_data):
 
 # --- Page Layout Builders ---
 def build_overview_layout():
-    """Build the main command center overview layout."""
+    """Build the professional command center overview layout."""
     return html.Div([
         # KPI Row
         dbc.Row([
             dbc.Col([
                 html.Div(id='kpi-total-inventory')
-            ], lg=3, md=6, className="mb-3"),
+            ], xl=3, lg=6, md=6, className="mb-4"),
             dbc.Col([
                 html.Div(id='kpi-usable-ullage')
-            ], lg=3, md=6, className="mb-3"),
+            ], xl=3, lg=6, md=6, className="mb-4"),
             dbc.Col([
                 html.Div(id='kpi-active-pumps')
-            ], lg=3, md=6, className="mb-3"),
+            ], xl=3, lg=6, md=6, className="mb-4"),
             dbc.Col([
                 html.Div(id='kpi-daily-throughput')
-            ], lg=3, md=6, className="mb-3"),
-        ], className="mb-4"),
+            ], xl=3, lg=6, md=6, className="mb-4"),
+        ]),
         
         # Main Content Row
         dbc.Row([
@@ -706,29 +1119,36 @@ def build_overview_layout():
             dbc.Col([
                 html.Div([
                     html.Div([
-                        html.Span("Live Depot View", className="section-title"),
                         html.Div([
-                            html.Div(className="pulse-dot me-2"),
-                            html.Span("LIVE", style={"color": "#38ef7d", "fontSize": "0.75rem", "fontWeight": "600"})
-                        ], className="d-flex align-items-center")
-                    ], className="d-flex justify-content-between align-items-center mb-3"),
+                            html.Span("Live Depot View", className="section-title", style={"marginBottom": "0"}),
+                        ]),
+                        html.Div([
+                            html.Div([
+                                html.Div(className="pulse-dot me-2"),
+                                html.Span("LIVE", style={"color": "#10b981", "fontSize": "0.7rem", "fontWeight": "700", "letterSpacing": "0.1em"})
+                            ], className="d-flex align-items-center", style={
+                                "background": "rgba(16, 185, 129, 0.1)",
+                                "padding": "0.35rem 0.75rem",
+                                "borderRadius": "20px",
+                                "border": "1px solid rgba(16, 185, 129, 0.2)"
+                            })
+                        ])
+                    ], className="d-flex justify-content-between align-items-center mb-4"),
                     dcc.Loading(
                         type="circle",
-                        color="#667eea",
+                        color="#3b82f6",
                         children=html.Div(id='depot-hmi-view-container')
                     ),
                     # Legend
                     html.Div([
-                        html.Div([html.Div(className="legend-dot", style={"background": "#27ae60"}), "Normal"], className="legend-item"),
-                        html.Div([html.Div(className="legend-dot", style={"background": "#f39c12"}), "Warning"], className="legend-item"),
-                        html.Div([html.Div(className="legend-dot", style={"background": "#e74c3c"}), "Critical"], className="legend-item"),
-                        html.Div([html.Div(className="legend-dot", style={"background": "#3498db"}), "Low"], className="legend-item"),
-                        html.Div([
-                        html.Div(className="legend-dot", style={"background": "#f59e0b"}), "Pump Station"
-                    ], className="legend-item"),
+                        html.Div([html.Div(className="legend-dot", style={"background": "#10b981"}), "Normal"], className="legend-item"),
+                        html.Div([html.Div(className="legend-dot", style={"background": "#f59e0b"}), "Warning"], className="legend-item"),
+                        html.Div([html.Div(className="legend-dot", style={"background": "#ef4444"}), "Critical"], className="legend-item"),
+                        html.Div([html.Div(className="legend-dot", style={"background": "#3b82f6"}), "Low"], className="legend-item"),
+                        html.Div([html.Div(className="legend-dot", style={"background": "#f59e0b", "transform": "rotate(45deg)", "borderRadius": "2px"}), "Pump Station"], className="legend-item"),
                     ], className="tank-legend")
                 ], className="glass-card h-100")
-            ], lg=8, className="mb-4"),
+            ], xl=8, lg=12, className="mb-4"),
             
             # Right Column - Sidebar
             dbc.Col([
@@ -744,12 +1164,12 @@ def build_overview_layout():
                 # Active Alerts
                 html.Div([
                     html.Div([
-                        html.Span("Active Alerts", className="section-title"),
+                        html.Span("Active Alerts", className="section-title", style={"marginBottom": "0"}),
                         html.Span(id='alert-count-badge', className="status-badge status-warning")
-                    ], className="d-flex justify-content-between align-items-center"),
-                    html.Div(id='active-alerts-list', style={'maxHeight': '250px', 'overflowY': 'auto'})
+                    ], className="d-flex justify-content-between align-items-center mb-3"),
+                    html.Div(id='active-alerts-list', style={'maxHeight': '280px', 'overflowY': 'auto'})
                 ], className="glass-card")
-            ], lg=4, className="mb-4"),
+            ], xl=4, lg=12, className="mb-4"),
         ]),
         
         # Bottom Row - Financial KPIs & Recent Operations
@@ -758,52 +1178,69 @@ def build_overview_layout():
                 html.Div([
                     html.Span("Financial Overview", className="section-title"),
                     dbc.Row([
-                        dbc.Col([html.Div(id='kpi-inventory-value')], md=4),
-                        dbc.Col([html.Div(id='kpi-daily-cost')], md=4),
-                        dbc.Col([html.Div(id='kpi-efficiency')], md=4),
+                        dbc.Col([html.Div(id='kpi-inventory-value')], lg=4, md=12, className="mb-3 mb-lg-0"),
+                        dbc.Col([html.Div(id='kpi-daily-cost')], lg=4, md=12, className="mb-3 mb-lg-0"),
+                        dbc.Col([html.Div(id='kpi-efficiency')], lg=4, md=12),
                     ])
                 ], className="glass-card")
-            ], lg=6, className="mb-4"),
+            ], xl=6, lg=12, className="mb-4"),
             dbc.Col([
                 html.Div([
                     html.Span("Recent Operations", className="section-title"),
                     dcc.Loading(
                         type="circle",
-                        color="#667eea",
-                        children=html.Div(id='operation-logs-list', style={'maxHeight': '200px', 'overflowY': 'auto'})
+                        color="#3b82f6",
+                        children=html.Div(id='operation-logs-list', className="log-scroll", style={'maxHeight': '220px', 'overflowY': 'auto'})
                     )
                 ], className="glass-card")
-            ], lg=6, className="mb-4"),
+            ], xl=6, lg=12, className="mb-4"),
         ]),
         
-        # Last Updated
+        # Last Updated Footer
         html.Div([
-            html.I(className="fas fa-sync-alt me-2"),
-            html.Span(id='last-updated-time')
-        ], className="text-center", style={"color": "#a0a0a0", "fontSize": "0.8rem"})
-    ], className="p-4")
+            html.Div([
+                html.I(className="fas fa-sync-alt me-2", style={"fontSize": "0.75rem"}),
+                html.Span(id='last-updated-time')
+            ], style={
+                "display": "inline-flex", "alignItems": "center",
+                "background": "rgba(31, 41, 55, 0.5)", "padding": "0.5rem 1rem",
+                "borderRadius": "20px", "border": "1px solid rgba(55, 65, 81, 0.5)"
+            })
+        ], className="text-center", style={"color": "#6b7280", "fontSize": "0.75rem"})
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 def build_historical_analysis_layout():
-    """Build the historical data analysis page."""
+    """Build the professional historical data analysis page."""
     return html.Div([
         html.Div([
-            html.Span("Historical Data Analysis", className="section-title"),
-            html.P("Analyze trends and patterns in your depot data", style={"color": "#a0a0a0", "marginBottom": "1.5rem"})
-        ]),
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-chart-line", style={"fontSize": "1.5rem", "color": "#3b82f6"})
+                ], style={
+                    "width": "48px", "height": "48px", "borderRadius": "12px",
+                    "background": "rgba(59, 130, 246, 0.15)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                }),
+                html.Div([
+                    html.H4("Historical Data Analysis", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.P("Analyze trends and patterns in your depot data", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
+                ])
+            ], className="d-flex align-items-center")
+        ], className="mb-4"),
         
         html.Div([
             dbc.Row([
                 dbc.Col([
-                    html.Label("Select Asset", style={"color": "#a0a0a0", "fontSize": "0.85rem", "marginBottom": "0.5rem"}),
+                    html.Label("Select Asset", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='history-asset-dropdown', placeholder="Choose an asset...", className="mb-3")
-                ], md=3),
+                ], lg=3, md=6),
                 dbc.Col([
-                    html.Label("Select Metric", style={"color": "#a0a0a0", "fontSize": "0.85rem", "marginBottom": "0.5rem"}),
+                    html.Label("Select Metric", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='history-metric-dropdown', placeholder="Choose a metric...", className="mb-3")
-                ], md=3),
+                ], lg=3, md=6),
                 dbc.Col([
-                    html.Label("Date Range", style={"color": "#a0a0a0", "fontSize": "0.85rem", "marginBottom": "0.5rem"}),
+                    html.Label("Date Range", style={"color": "#9ca3af", "fontSize": "0.8rem", "marginBottom": "0.5rem", "fontWeight": "500"}),
                     dcc.DatePickerRange(
                         id='history-date-picker',
                         start_date=datetime.date.today() - datetime.timedelta(days=7),
@@ -811,158 +1248,323 @@ def build_historical_analysis_layout():
                         display_format='YYYY-MM-DD',
                         className="mb-3"
                     )
-                ], md=4),
+                ], lg=4, md=8),
                 dbc.Col([
                     html.Label(" ", style={"display": "block", "marginBottom": "0.5rem"}),
                     dbc.Button([
                         html.I(className="fas fa-chart-line me-2"),
                         "Load Data"
                     ], id="history-load-button", className="btn-primary-gradient w-100")
-                ], md=2),
+                ], lg=2, md=4),
             ])
         ], className="glass-card mb-4"),
         
         dcc.Loading(
             type="circle",
-            color="#667eea",
+            color="#3b82f6",
             children=html.Div(id="history-output-container")
         )
-    ], className="p-4")
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 def build_asset_info_layout():
-    """Build the asset information page."""
+    """Build the professional asset information page."""
     return html.Div([
         html.Div([
-            html.Span("Asset Registry", className="section-title"),
-            html.P("Complete inventory of all depot assets", style={"color": "#a0a0a0", "marginBottom": "1.5rem"})
-        ]),
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-database", style={"fontSize": "1.5rem", "color": "#8b5cf6"})
+                ], style={
+                    "width": "48px", "height": "48px", "borderRadius": "12px",
+                    "background": "rgba(139, 92, 246, 0.15)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                }),
+                html.Div([
+                    html.H4("Asset Registry", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.P("Complete inventory of all depot assets", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
+                ])
+            ], className="d-flex align-items-center")
+        ], className="mb-4"),
         html.Div([
             dcc.Loading(
                 type="circle",
-                color="#667eea",
+                color="#8b5cf6",
                 children=html.Div(id="asset-info-table-container")
             )
         ], className="glass-card")
-    ], className="p-4")
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 def build_logbook_layout():
-    """Build the manual logbook entry page."""
+    """Build the professional manual logbook entry page."""
     return html.Div([
         html.Div([
-            html.Span("Operations Logbook", className="section-title"),
-            html.P("Record operational events and activities", style={"color": "#a0a0a0", "marginBottom": "1.5rem"})
-        ]),
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-book", style={"fontSize": "1.5rem", "color": "#10b981"})
+                ], style={
+                    "width": "48px", "height": "48px", "borderRadius": "12px",
+                    "background": "rgba(16, 185, 129, 0.15)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                }),
+                html.Div([
+                    html.H4("Operations Logbook", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.P("Record operational events and activities", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
+                ])
+            ], className="d-flex align-items-center")
+        ], className="mb-4"),
         
         dbc.Row([
             dbc.Col([
                 html.Div([
-                    html.H5([html.I(className="fas fa-pen-to-square me-2"), "New Entry"], style={"color": "#fff", "marginBottom": "1.5rem"}),
+                    html.Div([
+                        html.I(className="fas fa-pen-to-square me-2", style={"color": "#10b981"}),
+                        html.Span("New Entry", style={"fontWeight": "600"})
+                    ], style={"color": "#f9fafb", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
                     dbc.Row([
                         dbc.Col([
-                            html.Label("Your Name", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
+                            html.Label("Your Name", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
                             dbc.Input(id='log-user-name', type='text', placeholder="Enter your name...", className="mb-3")
                         ], md=6),
                         dbc.Col([
-                            html.Label("Event Type", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
+                            html.Label("Event Type", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
                             dcc.Dropdown(
                                 id='log-event-type',
                                 options=[
-                                    {'label': '📋 General', 'value': 'General'},
-                                    {'label': '🛡️ Safety Check', 'value': 'Safety Check'},
-                                    {'label': '🔧 Maintenance', 'value': 'Maintenance'},
-                                    {'label': '🚛 Product Transfer', 'value': 'Product Transfer'},
-                                    {'label': '⚠️ Incident', 'value': 'Incident'}
+                                    {'label': 'General', 'value': 'General'},
+                                    {'label': 'Safety Check', 'value': 'Safety Check'},
+                                    {'label': 'Maintenance', 'value': 'Maintenance'},
+                                    {'label': 'Product Transfer', 'value': 'Product Transfer'},
+                                    {'label': 'Incident', 'value': 'Incident'}
                                 ],
                                 value='General',
                                 className="mb-3"
                             )
                         ], md=6)
                     ]),
-                    html.Label("Related Asset (Optional)", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
+                    html.Label("Related Asset (Optional)", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
                     dcc.Dropdown(id='log-asset-dropdown', placeholder="Select asset...", className="mb-3"),
-                    html.Label("Description", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
-                    dbc.Textarea(id='log-description', placeholder="Describe the event...", style={'height': '120px'}, className="mb-3"),
+                    html.Label("Description", style={"color": "#9ca3af", "fontSize": "0.8rem", "fontWeight": "500"}),
+                    dbc.Textarea(id='log-description', placeholder="Describe the event...", style={'height': '120px'}, className="mb-4"),
                     dbc.Button([
                         html.I(className="fas fa-paper-plane me-2"),
                         "Submit Entry"
                     ], id="log-submit-button", className="btn-primary-gradient"),
                     html.Div(id='log-submission-status', className="mt-3")
-                ], className="glass-card")
-            ], lg=6),
+                ], className="glass-card h-100")
+            ], lg=6, className="mb-4"),
             dbc.Col([
                 html.Div([
-                    html.H5([html.I(className="fas fa-clock-rotate-left me-2"), "Recent Entries"], style={"color": "#fff", "marginBottom": "1.5rem"}),
-                    html.Div(id='recent-log-entries', style={'maxHeight': '400px', 'overflowY': 'auto'})
-                ], className="glass-card")
-            ], lg=6)
+                    html.Div([
+                        html.I(className="fas fa-clock-rotate-left me-2", style={"color": "#3b82f6"}),
+                        html.Span("Recent Entries", style={"fontWeight": "600"})
+                    ], style={"color": "#f9fafb", "marginBottom": "1.5rem", "fontSize": "1.1rem"}),
+                    html.Div(id='recent-log-entries', className="log-scroll", style={'maxHeight': '400px', 'overflowY': 'auto'})
+                ], className="glass-card h-100")
+            ], lg=6, className="mb-4")
         ])
-    ], className="p-4")
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 def build_simulation_sandbox_layout():
-    """Build the simulation sandbox page."""
+    """Build the professional simulation sandbox page with tank transfer simulation."""
     return html.Div([
         html.Div([
-            html.Span("Simulation Sandbox", className="section-title"),
-            html.P("Run what-if scenarios and predictive simulations", style={"color": "#a0a0a0", "marginBottom": "1.5rem"})
-        ]),
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-flask", style={"fontSize": "1.5rem", "color": "#f59e0b"})
+                ], style={
+                    "width": "48px", "height": "48px", "borderRadius": "12px",
+                    "background": "rgba(245, 158, 11, 0.15)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                }),
+                html.Div([
+                    html.H4("Simulation Sandbox", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.P("Run what-if scenarios and predictive simulations for operational planning", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
+                ])
+            ], className="d-flex align-items-center")
+        ], className="mb-4"),
         
         dbc.Row([
+            # Left Panel - Configuration
             dbc.Col([
                 html.Div([
-                    html.H5([html.I(className="fas fa-flask me-2"), "Tank Transfer Simulation"], style={"color": "#fff", "marginBottom": "1.5rem"}),
-                    html.Label("Source Tank", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
-                    dcc.Dropdown(id='sim-source-tank-dropdown', placeholder="Select source...", className="mb-3"),
-                    html.Label("Destination Tank", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
-                    dcc.Dropdown(id='sim-dest-tank-dropdown', placeholder="Select destination...", className="mb-3"),
-                    html.Label("Transfer Pump", style={"color": "#a0a0a0", "fontSize": "0.85rem"}),
-                    dcc.Dropdown(id='sim-pump-dropdown', placeholder="Select pump...", className="mb-3"),
+                    # Header
+                    html.Div([
+                        html.Div([
+                            html.I(className="fas fa-exchange-alt", 
+                                   style={"fontSize": "1.25rem", "color": "#3b82f6"}),
+                        ], style={
+                            "width": "44px", "height": "44px", "borderRadius": "10px",
+                            "background": "rgba(59, 130, 246, 0.15)", "display": "flex",
+                            "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                        }),
+                        html.Div([
+                            html.H5("Tank Transfer Simulation", 
+                                    style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "600"}),
+                            html.Span("Predict transfer times and volume changes", 
+                                      style={"color": "#6b7280", "fontSize": "0.8rem"})
+                        ])
+                    ], className="d-flex align-items-center mb-4"),
+                    
+                    # Source Tank Selection
+                    html.Div([
+                        html.Label([
+                            html.I(className="fas fa-arrow-right-from-bracket me-2", style={"color": "#ef4444"}),
+                            "Source Tank"
+                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        dcc.Dropdown(
+                            id='sim-source-tank-dropdown', 
+                            placeholder="Select source tank...", 
+                            className="mb-2"
+                        ),
+                        html.Div(id='source-tank-info', className="mb-3")
+                    ]),
+                    
+                    # Destination Tank Selection
+                    html.Div([
+                        html.Label([
+                            html.I(className="fas fa-arrow-right-to-bracket me-2", style={"color": "#10b981"}),
+                            "Destination Tank"
+                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        dcc.Dropdown(
+                            id='sim-dest-tank-dropdown', 
+                            placeholder="Select destination tank...", 
+                            className="mb-2"
+                        ),
+                        html.Div(id='dest-tank-info', className="mb-3")
+                    ]),
+                    
+                    # Pump Selection
+                    html.Div([
+                        html.Label([
+                            html.I(className="fas fa-gauge-high me-2", style={"color": "#f59e0b"}),
+                            "Transfer Pump"
+                        ], style={"color": "#e2e8f0", "fontSize": "0.8rem", "fontWeight": "500", "marginBottom": "0.5rem"}),
+                        dcc.Dropdown(
+                            id='sim-pump-dropdown', 
+                            placeholder="Select pump...", 
+                            className="mb-2"
+                        ),
+                        html.Div(id='pump-info', className="mb-4")
+                    ]),
+                    
+                    # Run Button
                     dbc.Button([
                         html.I(className="fas fa-play me-2"),
                         "Run Simulation"
-                    ], id="run-tank-sim-button", className="btn-primary-gradient w-100 mt-2")
-                ], className="glass-card")
-            ], lg=4),
+                    ], id="run-tank-sim-button", className="btn-primary-gradient w-100", 
+                       style={"padding": "0.875rem", "fontSize": "0.95rem", "fontWeight": "600"})
+                    
+                ], className="glass-card h-100")
+            ], lg=4, className="mb-4"),
+            
+            # Right Panel - Results
             dbc.Col([
                 html.Div([
-                    html.H5([html.I(className="fas fa-chart-area me-2"), "Simulation Results"], style={"color": "#fff", "marginBottom": "1.5rem"}),
                     dcc.Loading(
                         type="circle",
-                        color="#667eea",
-                        children=html.Div(id="sim-results-output")
+                        color="#3b82f6",
+                        children=html.Div(id="sim-results-output", children=[
+                            # Default state
+                            html.Div([
+                                html.Div([
+                                    html.Div([
+                                        html.I(className="fas fa-flask", style={"fontSize": "2.5rem", "color": "#374151"})
+                                    ], style={
+                                        "width": "80px", "height": "80px", "borderRadius": "50%",
+                                        "background": "rgba(55, 65, 81, 0.3)", "display": "flex",
+                                        "alignItems": "center", "justifyContent": "center", "margin": "0 auto 1.5rem"
+                                    }),
+                                    html.H5("Ready to Simulate", style={"color": "#9ca3af", "fontWeight": "600", "marginBottom": "0.5rem"}),
+                                    html.P("Select source tank, destination tank, and pump to run a transfer simulation.",
+                                           style={"color": "#6b7280", "fontSize": "0.9rem", "maxWidth": "400px", "margin": "0 auto", "lineHeight": "1.6"})
+                                ], className="text-center py-5")
+                            ])
+                        ])
                     )
+                ], className="glass-card h-100", style={"minHeight": "500px"})
+            ], lg=8, className="mb-4")
+        ]),
+        
+        # Info Cards Row
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.Div([
+                        html.I(className="fas fa-info-circle me-2", style={"color": "#3b82f6"}),
+                        html.Span("How It Works", style={"fontWeight": "600", "color": "#f9fafb"})
+                    ], className="mb-2"),
+                    html.P([
+                        "The simulation calculates transfer time based on pump flow rate, tank capacities, ",
+                        "and current fill levels. It predicts when high/low level alarms will trigger."
+                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
                 ], className="glass-card h-100")
-            ], lg=8)
+            ], lg=4, className="mb-3"),
+            dbc.Col([
+                html.Div([
+                    html.Div([
+                        html.I(className="fas fa-shield-halved me-2", style={"color": "#10b981"}),
+                        html.Span("Safety Thresholds", style={"fontWeight": "600", "color": "#f9fafb"})
+                    ], className="mb-2"),
+                    html.P([
+                        "Transfer stops automatically at 95% destination capacity (high level) ",
+                        "or 5% source capacity (low level) to prevent overflow and pump cavitation."
+                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
+                ], className="glass-card h-100")
+            ], lg=4, className="mb-3"),
+            dbc.Col([
+                html.Div([
+                    html.Div([
+                        html.I(className="fas fa-gauge-high me-2", style={"color": "#f59e0b"}),
+                        html.Span("Pump Specifications", style={"fontWeight": "600", "color": "#f9fafb"})
+                    ], className="mb-2"),
+                    html.P([
+                        "Flow rates vary by pump: Zone A (2500-3000 LPM), Zone B (2000 LPM), ",
+                        "Zone C (1500-2200 LPM). Select appropriate pump for product compatibility."
+                    ], style={"color": "#9ca3af", "fontSize": "0.85rem", "marginBottom": "0", "lineHeight": "1.5"})
+                ], className="glass-card h-100")
+            ], lg=4, className="mb-3"),
         ])
-    ], className="p-4")
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 def build_log_viewer_layout():
-    """Build the system log viewer page."""
+    """Build the professional system log viewer page."""
     return html.Div([
         html.Div([
-            html.Span("System Logs", className="section-title"),
-            html.P("Real-time dashboard activity logs", style={"color": "#a0a0a0", "marginBottom": "1.5rem"})
-        ]),
+            html.Div([
+                html.Div([
+                    html.I(className="fas fa-terminal", style={"fontSize": "1.5rem", "color": "#10b981"})
+                ], style={
+                    "width": "48px", "height": "48px", "borderRadius": "12px",
+                    "background": "rgba(16, 185, 129, 0.15)", "display": "flex",
+                    "alignItems": "center", "justifyContent": "center", "marginRight": "1rem"
+                }),
+                html.Div([
+                    html.H4("System Logs", style={"color": "#f9fafb", "marginBottom": "0.25rem", "fontWeight": "700"}),
+                    html.P("Real-time dashboard activity logs", style={"color": "#6b7280", "marginBottom": "0", "fontSize": "0.9rem"})
+                ])
+            ], className="d-flex align-items-center")
+        ], className="mb-4"),
         html.Div([
             dcc.Textarea(
                 id='log-viewer-textarea',
                 style={
                     'width': '100%', 'height': '600px',
-                    'fontFamily': 'JetBrains Mono, monospace',
+                    'fontFamily': '"JetBrains Mono", "Fira Code", "Consolas", monospace',
                     'fontSize': '12px',
-                    'backgroundColor': '#0d1b2a',
-                    'color': '#38ef7d',
-                    'border': '1px solid rgba(255,255,255,0.1)',
-                    'borderRadius': '8px',
-                    'padding': '1rem'
+                    'backgroundColor': '#0a0f1a',
+                    'color': '#10b981',
+                    'border': '1px solid #1f2937',
+                    'borderRadius': '12px',
+                    'padding': '1.25rem',
+                    'lineHeight': '1.6'
                 },
                 readOnly=True
             )
         ], className="glass-card")
-    ], className="p-4")
+    ], className="p-4", style={"maxWidth": "1800px", "margin": "0 auto"})
 
 
 # --- Main App Layout ---
@@ -995,14 +1597,25 @@ app.layout = html.Div([
     dcc.Interval(id='api-update-interval', interval=15 * 1000, n_intervals=0),
     dcc.Interval(id='log-update-interval', interval=5 * 1000, n_intervals=0),
     
-    # Navbar
+    # Professional Navbar
     dbc.Navbar([
         dbc.Container([
             dbc.Row([
                 dbc.Col([
                     html.Div([
-                        html.I(className="fas fa-industry me-3", style={"fontSize": "1.5rem", "color": "#667eea"}),
-                        html.Span("Fuel Depot Digital Twin", className="navbar-brand mb-0")
+                        html.Div([
+                            html.I(className="fas fa-industry", style={"fontSize": "1.25rem"})
+                        ], style={
+                            "width": "40px", "height": "40px", "borderRadius": "10px",
+                            "background": "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                            "display": "flex", "alignItems": "center", "justifyContent": "center",
+                            "color": "#fff", "marginRight": "0.875rem",
+                            "boxShadow": "0 4px 12px rgba(59, 130, 246, 0.3)"
+                        }),
+                        html.Div([
+                            html.Span("Fuel Depot", style={"fontWeight": "700", "fontSize": "1.15rem", "color": "#f9fafb", "letterSpacing": "-0.025em"}),
+                            html.Span(" Digital Twin", style={"fontWeight": "400", "fontSize": "1.15rem", "color": "#9ca3af", "letterSpacing": "-0.025em"})
+                        ])
                     ], className="d-flex align-items-center")
                 ]),
                 dbc.Col([
@@ -1010,7 +1623,7 @@ app.layout = html.Div([
                         html.Div([
                             html.Div(className="pulse-dot"),
                         ], className="me-2"),
-                        html.Span("System Online", style={"color": "#38ef7d", "fontSize": "0.85rem"})
+                        html.Span("System Online", style={"color": "#10b981", "fontSize": "0.8rem", "fontWeight": "600", "letterSpacing": "0.025em"})
                     ], className="d-flex align-items-center justify-content-end")
                 ])
             ], className="w-100", align="center")
@@ -1039,7 +1652,7 @@ app.layout = html.Div([
     # Safety Simulation Modal
     dbc.Modal([
         dbc.ModalHeader(dbc.ModalTitle([
-            html.I(className="fas fa-fire-flame-curved me-2", style={"color": "#e74c3c"}),
+            html.I(className="fas fa-fire-flame-curved me-2", style={"color": "#ef4444"}),
             "Safety Simulation"
         ]), close_button=True),
         dbc.ModalBody(id="safety-modal-body"),
@@ -1136,36 +1749,57 @@ def update_all_components(data, fire_sim_results):
         daily_kwh = active_pumps * PUMP_POWER_KW * ESTIMATED_DAILY_HOURS_PER_PUMP
         daily_electricity_cost = (daily_kwh * ELECTRICITY_RATE_PER_KWH) + SERVICE_CHARGE
         
-        # Build KPI cards
-        kpi_inventory = build_kpi_card("Total Inventory", f"{total_inv/1e6:.2f}", "M Litres", "fa-oil-can", "#0ea5e9")
-        kpi_ullage = build_kpi_card("Usable Ullage", f"{usable_ullage/1e6:.2f}", "M Litres", "fa-arrow-up-from-bracket", "#22c55e")
+        # Build KPI cards with professional styling
+        kpi_inventory = build_kpi_card("Total Inventory", f"{total_inv/1e6:.2f}", "M Litres", "fa-oil-can", "#3b82f6")
+        kpi_ullage = build_kpi_card("Usable Ullage", f"{usable_ullage/1e6:.2f}", "M Litres", "fa-arrow-up-from-bracket", "#10b981")
         kpi_pumps = build_kpi_card("Active Pumps", f"{active_pumps}/{total_pumps}", "", "fa-gauge-high", "#f59e0b")
         kpi_throughput = build_kpi_card("Daily Throughput", "10.1", "M Litres", "fa-truck-fast", "#8b5cf6")
         
-        kpi_value = build_kpi_card("Inventory Value", f"${inv_value/1e6:.2f}M", "", "fa-dollar-sign", "#22c55e")
+        kpi_value = build_kpi_card("Inventory Value", f"${inv_value/1e6:.2f}M", "", "fa-dollar-sign", "#10b981")
         kpi_cost = build_kpi_card("Daily Op. Cost", f"${daily_electricity_cost:,.0f}", "", "fa-bolt", "#f59e0b")
-        kpi_efficiency = build_kpi_card("Efficiency", "94.2%", "", "fa-chart-line", "#0ea5e9")
+        kpi_efficiency = build_kpi_card("Efficiency", "94.2%", "", "fa-chart-line", "#3b82f6")
         
         # Alerts
         alerts = data.get('alerts', [])
         alert_count = f"{len(alerts)} Active" if alerts else "0 Active"
         
-        # Logs
+        # Logs with professional styling
         logs = data.get('logs', [])
         if logs:
             log_items = []
             for log in logs[:5]:
+                event_type = log.get('event_type', 'Event')
+                badge_colors = {
+                    'GENERAL': ('#3b82f6', 'rgba(59, 130, 246, 0.15)'),
+                    'SAFETY CHECK': ('#10b981', 'rgba(16, 185, 129, 0.15)'),
+                    'MAINTENANCE': ('#f59e0b', 'rgba(245, 158, 11, 0.15)'),
+                    'PRODUCT TRANSFER': ('#8b5cf6', 'rgba(139, 92, 246, 0.15)'),
+                    'INCIDENT': ('#ef4444', 'rgba(239, 68, 68, 0.15)')
+                }
+                color, bg = badge_colors.get(event_type.upper(), ('#3b82f6', 'rgba(59, 130, 246, 0.15)'))
+                
                 log_items.append(html.Div([
                     html.Div([
-                        html.Span(log.get('event_type', 'Event'), className="status-badge status-online me-2"),
-                        html.Span(log.get('user_name', 'System'), style={"color": "#fff", "fontWeight": "500"})
+                        html.Span(event_type, style={
+                            "fontSize": "0.65rem", "fontWeight": "600", "textTransform": "uppercase",
+                            "letterSpacing": "0.5px", "color": color, "background": bg,
+                            "padding": "0.25rem 0.5rem", "borderRadius": "4px", "marginRight": "0.75rem"
+                        }),
+                        html.Span(log.get('user_name', 'System'), style={"color": "#f9fafb", "fontWeight": "500", "fontSize": "0.875rem"})
                     ], className="d-flex align-items-center mb-1"),
-                    html.P(log.get('description', '')[:80] + "..." if len(log.get('description', '')) > 80 else log.get('description', ''), 
-                           className="mb-0", style={"fontSize": "0.8rem", "color": "#a0a0a0"})
-                ], className="alert-item alert-info"))
+                    html.P(log.get('description', '')[:100] + "..." if len(log.get('description', '')) > 100 else log.get('description', ''), 
+                           className="mb-0", style={"fontSize": "0.8rem", "color": "#9ca3af", "lineHeight": "1.4"})
+                ], style={
+                    "background": "rgba(31, 41, 55, 0.5)", "borderRadius": "10px",
+                    "padding": "0.875rem 1rem", "marginBottom": "0.75rem",
+                    "borderLeft": f"3px solid {color}"
+                }))
             log_list = html.Div(log_items)
         else:
-            log_list = html.Div("No recent operations", className="text-center text-muted py-3")
+            log_list = html.Div([
+                html.I(className="fas fa-inbox", style={"fontSize": "1.5rem", "color": "#374151"}),
+                html.P("No recent operations", style={"color": "#6b7280", "marginTop": "0.5rem", "marginBottom": "0"})
+            ], className="text-center py-4")
         
         # Weather
         weather = data.get('weather', {})
@@ -1239,7 +1873,7 @@ def run_fire_simulation(n_clicks, asset_id):
 def populate_history_asset_dropdown(tab, data):
     if tab != 'tab-history' or not data or not data.get('assets'):
         return []
-    return [{'label': f"🛢️ {a['asset_id']}" if a.get('asset_type') == 'StorageTank' else f"⚙️ {a['asset_id']}", 'value': a['asset_id']} for a in data['assets']]
+    return [{'label': f"[Tank] {a['asset_id']}" if a.get('asset_type') == 'StorageTank' else f"[Equip] {a['asset_id']}", 'value': a['asset_id']} for a in data['assets']]
 
 
 @app.callback(Output('history-metric-dropdown', 'options'), Input('history-asset-dropdown', 'value'))
@@ -1405,8 +2039,8 @@ def submit_log_entry(n_clicks, user, event_type, desc, asset_id):
 def populate_sim_dropdowns(tab, data):
     if tab != 'tab-sandbox' or not data or not data.get('assets'):
         return [], [], []
-    tanks = [{'label': f"🛢️ {a['asset_id']}", 'value': a['asset_id']} for a in data['assets'] if a.get('asset_type') == 'StorageTank']
-    pumps = [{'label': f"⚙️ {a['asset_id']}", 'value': a['asset_id']} for a in data['assets'] if a.get('asset_type') == 'Pump']
+    tanks = [{'label': f"[Tank] {a['asset_id']}", 'value': a['asset_id']} for a in data['assets'] if a.get('asset_type') == 'StorageTank']
+    pumps = [{'label': f"[Pump] {a['asset_id']}", 'value': a['asset_id']} for a in data['assets'] if a.get('asset_type') == 'Pump']
     return tanks, tanks, pumps
 
 
@@ -1478,5 +2112,5 @@ def run_tank_transfer_simulation(n_clicks, source_tank, dest_tank, pump_id):
 server = app.server
 
 if __name__ == '__main__':
-    print("\n🚀 Dashboard running at: http://127.0.0.1:8050\n")
+    print("\nDashboard running at: http://127.0.0.1:8050\n")
     app.run(debug=True, port=8050)

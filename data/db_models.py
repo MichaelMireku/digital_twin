@@ -13,7 +13,7 @@ class Asset(Base):
     __tablename__ = 'assets'
     asset_id = Column(String(50), primary_key=True)
     asset_type = Column(String(50), nullable=False, index=True)
-    depot_id = Column(String(20), default='DEMO_DEPOT_01')
+    depot_id = Column(String(20), default='DEMO_DEPOT')
     description = Column(String(255))
     area = Column(String(10), index=True)
     pump_house_id = Column(String(50), index=True)
@@ -36,6 +36,7 @@ class Asset(Base):
     maintenance_notes = Column(Text)
     notes = Column(Text)
     foam_system_present = Column(Boolean, default=False)
+    flow_rate_lpm = Column(Numeric)  # Pump flow rate in litres per minute
     high_level_threshold_m = Column(Numeric)
     low_level_threshold_m = Column(Numeric)
     high_high_level_threshold_m = Column(Numeric)
@@ -44,7 +45,17 @@ class Asset(Base):
     last_updated = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
     def to_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        result = {}
+        for c in self.__table__.columns:
+            value = getattr(self, c.name)
+            # Convert Decimal to float for JSON serialization
+            if hasattr(value, '__float__'):
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    pass
+            result[c.name] = value
+        return result
 
 class SensorReading(Base):
     __tablename__ = 'sensor_readings'

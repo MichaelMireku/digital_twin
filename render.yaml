@@ -35,7 +35,12 @@ services:
           name: depot-db
           property: database
       - key: API_KEY
-        generateValue: true
+        sync: false
+      - key: API_BASE_URL
+        fromService:
+          name: depot-api
+          type: web
+          property: host
       - key: PYTHON_VERSION
         value: "3.11"
 
@@ -68,4 +73,24 @@ services:
           name: depot-db
           property: database
       - key: API_KEY
-        generateValue: true
+        sync: false
+
+  # Static site for 3D viewer
+  - type: web
+    name: depot-3dview
+    runtime: static
+    plan: free
+    region: oregon
+    buildCommand: echo "Static site ready"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://depot-api.onrender.com/api/*
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: "*"
+    envVars:
+      - key: API_KEY
+        sync: false

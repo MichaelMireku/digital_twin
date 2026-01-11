@@ -33,6 +33,32 @@
         }
         #title-card h1 { font-size: 24px; margin: 0; }
         #title-card p { font-size: 14px; margin: 5px 0 0 0; color: #aaa; }
+        #mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            background: rgba(97, 218, 251, 0.2);
+            border: 1px solid #61dafb;
+            border-radius: 6px;
+            color: #61dafb;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #mode-toggle:hover { background: rgba(97, 218, 251, 0.4); }
+        #data-status {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #888;
+        }
+        #data-status.connected { color: #4caf50; }
+        #data-status.error { color: #ff6b6b; }
+        #data-status.loading { color: #ffa500; }
     </style>
 </head>
 <body>
@@ -45,6 +71,9 @@
         <h1>Fuel Depot Digital Twin</h1>
         <p>Interactive 3D Facility View</p>
     </div>
+    <button id="mode-toggle">Switch to Procedural</button>
+    <div id="data-status" class="loading">⏳ Connecting to API...</div>
+    <button id="api-key-btn" style="position:absolute;top:80px;right:10px;padding:6px 12px;background:rgba(0,0,0,0.6);border:1px solid #555;border-radius:6px;color:#aaa;cursor:pointer;font-size:11px;">🔑 Set API Key</button>
 
     <script type="importmap">
         {
@@ -58,54 +87,164 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-        // --- Data Source (from depot_layout.py) ---
+        // --- Configuration ---
+        let useGLBModel = true;
+        const GLB_MODEL_PATH = 'assets/depot_model.glb';
+        
+        // --- API Configuration ---
+        // Auto-detect API URL: use relative path if same origin, or configure for deployed environment
+        const API_BASE_URL = window.DEPOT_API_URL || '/api/v1';
+        const API_KEY = localStorage.getItem('depot_api_key') || '';
+        const POLL_INTERVAL_MS = 5000; // Refresh tank data every 5 seconds
+        
+        // --- Live Data Store ---
+        let tankDataCache = {}; // { asset_id: { level_percentage, volume_gsv, temperature, ... } }
+        let assetsMetadata = {}; // { asset_id: { asset_type, capacity_litres, product_service, ... } }
+        let dataLoadError = null;
+        
+        // --- API Helper Functions ---
+        async function fetchWithAuth(endpoint) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (API_KEY) headers['X-API-Key'] = API_KEY;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, { headers });
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Failed to fetch ${endpoint}:`, error);
+                throw error;
+            }
+        }
+        
+        async function loadAllAssets() {
+            updateDataStatus('loading', '⏳ Loading assets...');
+            try {
+                const data = await fetchWithAuth('/assets?per_page=500');
+                assetsMetadata = {};
+                data.assets.forEach(asset => {
+                    assetsMetadata[asset.asset_id] = asset;
+                });
+                console.log(`Loaded ${Object.keys(assetsMetadata).length} assets from API`);
+                dataLoadError = null;
+                updateDataStatus('connected', `✓ ${Object.keys(assetsMetadata).length} assets loaded`);
+                return assetsMetadata;
+            } catch (error) {
+                dataLoadError = error.message;
+                console.error('Failed to load assets:', error);
+                updateDataStatus('error', '✗ API connection failed');
+                return {};
+            }
+        }
+        
+        function updateDataStatus(status, message) {
+            const el = document.getElementById('data-status');
+            el.className = status;
+            el.innerText = message;
+        }
+        
+        async function loadTankDetails(assetId) {
+            try {
+                const data = await fetchWithAuth(`/assets/${assetId}`);
+                if (data.latest_dynamic_state) {
+                    tankDataCache[assetId] = {
+                        level_percentage: data.latest_dynamic_state.level_percentage?.value,
+                        volume_gsv: data.latest_dynamic_state.volume_gsv?.value,
+                        volume_gov: data.latest_dynamic_state.volume_gov?.value,
+                        temperature: data.latest_dynamic_state.temperature?.value,
+                        timestamp: data.latest_dynamic_state.level_percentage?.timestamp || new Date().toISOString()
+                    };
+                }
+                return tankDataCache[assetId];
+            } catch (error) {
+                console.error(`Failed to load tank ${assetId}:`, error);
+                return null;
+            }
+        }
+        
+        async function refreshAllTankData() {
+            const tankAssets = Object.values(assetsMetadata).filter(a => a.asset_type === 'StorageTank');
+            if (tankAssets.length === 0) return;
+            
+            const promises = tankAssets.map(tank => loadTankDetails(tank.asset_id));
+            await Promise.allSettled(promises);
+            
+            const loadedCount = Object.keys(tankDataCache).length;
+            if (loadedCount > 0) {
+                updateDataStatus('connected', `✓ Live: ${loadedCount} tanks`);
+            }
+            
+            updateTankVisuals();
+        }
+        
+        function startDataPolling() {
+            // Initial load
+            loadAllAssets().then(() => refreshAllTankData());
+            
+            // Periodic refresh
+            setInterval(() => {
+                refreshAllTankData();
+            }, POLL_INTERVAL_MS);
+        }
+
+        // --- Data Source (fictional depot layout for procedural mode) ---
         const DEPOT_LAYOUT = {
             "tanks": {
-                "T-121": {"x": 15, "y": 70, "diameter_m": 20}, "T-122": {"x": 15, "y": 55, "diameter_m": 20},
-                "T-123": {"x": 35, "y": 70, "diameter_m": 20}, "T-124": {"x": 35, "y": 55, "diameter_m": 20},
-                "T-101": {"x": 58, "y": 80, "diameter_m": 2}, "T-102": {"x": 68, "y": 80, "diameter_m": 7.2},
-                "T-103": {"x": 58, "y": 68, "diameter_m": 12.6}, "T-141": {"x": 90, "y": 80, "diameter_m": 11.6},
-                "T-142": {"x": 105, "y": 80, "diameter_m": 11.6}, "T-143": {"x": 90, "y": 65, "diameter_m": 11.6},
-                "T-144": {"x": 105, "y": 65, "diameter_m": 11.6}, "T-5801": {"x": 90, "y": 100, "diameter_m": 21.7},
-                "T-5802": {"x": 110, "y": 95, "diameter_m": 21.8}, "T-5803": {"x": 110, "y": 75, "diameter_m": 21.3},
-                "T-5804": {"x": 95, "y": 80, "diameter_m": 11.3},
+                "TK-A01": {"x": 18, "y": 85, "diameter_m": 13}, "TK-A02": {"x": 32, "y": 85, "diameter_m": 13},
+                "TK-A03": {"x": 18, "y": 70, "diameter_m": 14}, "TK-A04": {"x": 32, "y": 70, "diameter_m": 14},
+                "TK-B01": {"x": 55, "y": 90, "diameter_m": 9}, "TK-B02": {"x": 68, "y": 90, "diameter_m": 10},
+                "TK-B03": {"x": 62, "y": 75, "diameter_m": 11},
+                "TK-C01": {"x": 85, "y": 65, "diameter_m": 11}, "TK-C02": {"x": 98, "y": 65, "diameter_m": 11},
+                "TK-C03": {"x": 85, "y": 50, "diameter_m": 11}, "TK-C04": {"x": 98, "y": 50, "diameter_m": 11},
+                "TK-D01": {"x": 25, "y": 35, "diameter_m": 14}, "TK-D02": {"x": 42, "y": 35, "diameter_m": 14},
+                "TK-D03": {"x": 25, "y": 18, "diameter_m": 14}, "TK-D04": {"x": 42, "y": 18, "diameter_m": 11},
             },
-            "gantries": [{"id": "Loading Gantry", "x": 63, "y": 48, "width": 18, "height": 6}],
+            "gantries": [{"id": "Loading Bay", "x": 75, "y": 25, "width": 20, "height": 8}],
             "buildings": {
-                "Admin Area": {"x": 30, "y": 15, "width": 20, "height": 10}, "Control Room": {"x": 55, "y": 30, "width": 15, "height": 8},
-                "Ullage Area": {"x": 75, "y": 80, "width": 8, "height": 6}, "PL Receipt Area": {"x": 95, "y": 45, "width": 12, "height": 6},
-                "Security Cabin G1": {"x": 73, "y": 40, "width": 4, "height": 3}, "Security Cabin G2": {"x": 48, "y": 40, "width": 4, "height": 3},
+                "Admin Block": {"x": 108, "y": 90, "width": 12, "height": 8},
+                "Control Room": {"x": 60, "y": 45, "width": 10, "height": 6},
+                "Operations": {"x": 95, "y": 85, "width": 8, "height": 5},
+                "Maintenance": {"x": 108, "y": 25, "width": 10, "height": 6},
             },
             "bund_walls": {
-                "Area A": "M 5 25 L 5 80 L 45 80 L 45 25 Z", "Area B": "M 46 60 L 46 90 L 73 90 L 73 55 L 70 55 L 70 60 Z",
-                "Area C": "M 74 55 L 74 90 L 115 90 L 115 55 Z", "Area AT&V": "M 80 85 L 80 105 L 118 105 L 118 60 L 93 60 L 93 85 Z"
+                "Zone A": "M 5 60 L 5 95 L 45 95 L 45 60 Z",
+                "Zone B": "M 48 65 L 48 98 L 78 98 L 78 65 Z",
+                "Zone C": "M 75 40 L 75 75 L 110 75 L 110 40 Z",
+                "Zone D": "M 12 8 L 12 45 L 55 45 L 55 8 Z"
             }
         };
 
         // --- Scene Setup ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x282c34);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
         // --- Lighting ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
         directionalLight.position.set(-30, 50, 20);
+        directionalLight.castShadow = true;
         scene.add(directionalLight);
+        const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x444444, 0.5);
+        scene.add(hemisphereLight);
 
         // --- Controls ---
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = false;
-        controls.minDistance = 50;
-        controls.maxDistance = 200;
-        controls.maxPolarAngle = Math.PI / 2.2;
+        controls.minDistance = 10;
+        controls.maxDistance = 500;
+        controls.maxPolarAngle = Math.PI / 2.1;
 
         // --- Materials ---
         const mat_tank = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.7, roughness: 0.3 });
@@ -118,13 +257,17 @@
         scene.add(depotGroup);
         const tanksGroup = new THREE.Group();
         scene.add(tanksGroup);
+        let glbModel = null;
         
-        // --- Scene Generation ---
-        function createDepot() {
+        // --- Procedural Scene Generation ---
+        function createProceduralDepot() {
+            clearScene();
+            
             // Ground Plane
             const groundGeo = new THREE.PlaneGeometry(200, 200);
             const ground = new THREE.Mesh(groundGeo, mat_ground);
             ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
             depotGroup.add(ground);
 
             // Tanks
@@ -133,9 +276,11 @@
                 const height = 16;
                 const tankGeo = new THREE.CylinderGeometry(radius, radius, height, 64);
                 const tank = new THREE.Mesh(tankGeo, mat_tank.clone());
-                tank.position.set(specs.x - 60, height / 2, -(specs.y - 60)); // Center and flip Z for correct orientation
+                tank.position.set(specs.x - 60, height / 2, -(specs.y - 60));
                 tank.name = name;
-                tank.userData = { type: 'Tank', ...specs };
+                tank.userData = { type: 'Tank', isProcedural: true, ...specs };
+                tank.castShadow = true;
+                tank.receiveShadow = true;
                 tanksGroup.add(tank);
             });
 
@@ -147,6 +292,8 @@
                 building.position.set(specs.x - 60, 2.5, -(specs.y - 60));
                 building.name = name;
                 building.userData = { type: 'Building', ...specs };
+                building.castShadow = true;
+                building.receiveShadow = true;
                 depotGroup.add(building);
             });
             
@@ -163,9 +310,156 @@
                 const wallGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                 const wall = new THREE.Mesh(wallGeo, mat_bund);
                 wall.rotation.x = -Math.PI / 2;
+                wall.receiveShadow = true;
                 depotGroup.add(wall);
             });
+
+            // Set camera for procedural view
+            camera.position.set(50, 100, 100);
+            controls.target.set(20, 0, -40);
+            controls.update();
         }
+
+        // --- Load GLB Model ---
+        function loadGLBModel() {
+            clearScene();
+            
+            const loader = new GLTFLoader();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-indicator';
+            loadingDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:20px 40px;background:rgba(0,0,0,0.8);border-radius:8px;font-size:16px;color:white;z-index:1000;';
+            loadingDiv.innerText = 'Loading 3D Model...';
+            document.body.appendChild(loadingDiv);
+
+            loader.load(
+                GLB_MODEL_PATH,
+                (gltf) => {
+                    glbModel = gltf.scene;
+                    
+                    // Calculate bounding box
+                    const box = new THREE.Box3().setFromObject(glbModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Center model at origin
+                    glbModel.position.x = -center.x;
+                    glbModel.position.z = -center.z;
+                    glbModel.position.y = -box.min.y;
+                    
+                    // Collect tanks first, then process (to avoid modifying during traverse)
+                    const tankMeshes = [];
+                    
+                    // Process meshes
+                    glbModel.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            
+                            // Ensure material supports emissive for highlighting
+                            if (child.material) {
+                                if (Array.isArray(child.material)) {
+                                    child.material = child.material.map(m => {
+                                        const newMat = m.clone();
+                                        newMat.emissive = new THREE.Color(0x000000);
+                                        return newMat;
+                                    });
+                                } else {
+                                    child.material = child.material.clone();
+                                    child.material.emissive = new THREE.Color(0x000000);
+                                }
+                            }
+                            
+                            // Identify tanks by name pattern - collect for later
+                            const name = child.name.toUpperCase();
+                            if (name.includes('TK') || name.includes('TANK')) {
+                                child.userData = { type: 'Tank', isGLB: true };
+                                tankMeshes.push(child);
+                            }
+                        }
+                    });
+                    
+                    // Add tank references to tanksGroup (don't remove from model)
+                    tankMeshes.forEach(tank => {
+                        tanksGroup.children.push(tank);
+                    });
+                    
+                    depotGroup.add(glbModel);
+                    
+                    // Add ground plane under GLB model
+                    const groundSize = Math.max(size.x, size.z) * 1.5;
+                    const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
+                    const ground = new THREE.Mesh(groundGeo, mat_ground);
+                    ground.rotation.x = -Math.PI / 2;
+                    ground.position.y = -0.1;
+                    ground.receiveShadow = true;
+                    depotGroup.add(ground);
+                    
+                    // Position camera to view entire model
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / Math.sin(fov / 2)) * 0.8;
+                    
+                    camera.position.set(cameraZ * 0.7, cameraZ * 0.5, cameraZ * 0.7);
+                    controls.target.set(0, size.y / 4, 0);
+                    controls.update();
+                    
+                    loadingDiv.remove();
+                    console.log('GLB model loaded successfully. Size:', size);
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        const pct = (progress.loaded / progress.total * 100).toFixed(0);
+                        loadingDiv.innerText = `Loading 3D Model... ${pct}%`;
+                    }
+                },
+                (error) => {
+                    console.error('Error loading GLB model:', error);
+                    loadingDiv.innerText = 'Failed to load GLB. Switching to procedural...';
+                    setTimeout(() => {
+                        loadingDiv.remove();
+                        useGLBModel = false;
+                        updateModeButton();
+                        createProceduralDepot();
+                    }, 2000);
+                }
+            );
+        }
+
+        // --- Clear Scene ---
+        function clearScene() {
+            while (depotGroup.children.length > 0) {
+                const child = depotGroup.children[0];
+                depotGroup.remove(child);
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                }
+            }
+            while (tanksGroup.children.length > 0) {
+                tanksGroup.remove(tanksGroup.children[0]);
+            }
+            glbModel = null;
+        }
+
+        // --- Mode Toggle ---
+        function updateModeButton() {
+            const btn = document.getElementById('mode-toggle');
+            btn.innerText = useGLBModel ? 'Switch to Procedural' : 'Switch to GLB Model';
+        }
+
+        document.getElementById('mode-toggle').addEventListener('click', () => {
+            useGLBModel = !useGLBModel;
+            updateModeButton();
+            if (useGLBModel) {
+                loadGLBModel();
+            } else {
+                createProceduralDepot();
+            }
+        });
 
         // --- Interaction ---
         const raycaster = new THREE.Raycaster();
@@ -173,22 +467,41 @@
         let selectedObject = null;
 
         function onMouseClick(event) {
+            // Ignore clicks on UI elements
+            if (event.target.tagName === 'BUTTON') return;
+            
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             
-            const intersects = raycaster.intersectObjects(tanksGroup.children);
+            // Check both tanksGroup and all meshes in depotGroup
+            const allClickable = [...tanksGroup.children];
+            depotGroup.traverse((child) => {
+                if (child.isMesh) allClickable.push(child);
+            });
+            
+            const intersects = raycaster.intersectObjects(allClickable, true);
 
             if (intersects.length > 0) {
-                if (selectedObject) {
-                    selectedObject.material.emissive.setHex(0x000000);
+                const clickedObject = intersects[0].object;
+                
+                // Deselect previous
+                if (selectedObject && selectedObject.material) {
+                    if (selectedObject.material.emissive) {
+                        selectedObject.material.emissive.setHex(0x000000);
+                    }
                 }
-                selectedObject = intersects[0].object;
-                selectedObject.material.emissive.setHex(0x61dafb); // Highlight color
+                
+                selectedObject = clickedObject;
+                
+                // Highlight selected
+                if (selectedObject.material && selectedObject.material.emissive) {
+                    selectedObject.material.emissive.setHex(0x61dafb);
+                }
                 
                 updateInfoPanel(selectedObject);
             } else {
-                if (selectedObject) {
+                if (selectedObject && selectedObject.material && selectedObject.material.emissive) {
                     selectedObject.material.emissive.setHex(0x000000);
                 }
                 selectedObject = null;
@@ -198,13 +511,91 @@
         
         function updateInfoPanel(object) {
             const panel = document.getElementById('info-panel');
-            document.getElementById('asset-id').innerText = object.name;
-            document.getElementById('asset-type').innerText = `Type: ${object.userData.type}`;
+            const assetId = object.name || 'Unknown Asset';
+            const assetType = object.userData.type || 'Object';
             
-            const level = (Math.random() * 100).toFixed(2); // Simulate live data
-            document.getElementById('asset-data').innerText = `Level: ${level}%`;
+            document.getElementById('asset-id').innerText = assetId;
+            document.getElementById('asset-type').innerText = `Type: ${assetType}`;
+            
+            // Show live data for tanks
+            if (assetType === 'Tank') {
+                const liveData = tankDataCache[assetId];
+                const metadata = assetsMetadata[assetId];
+                
+                let dataHtml = '';
+                
+                if (liveData && liveData.level_percentage !== undefined) {
+                    dataHtml += `Level: ${liveData.level_percentage.toFixed(2)}%<br>`;
+                    if (liveData.volume_gsv !== undefined) {
+                        dataHtml += `Volume (GSV): ${Math.round(liveData.volume_gsv).toLocaleString()} L<br>`;
+                    }
+                    if (liveData.temperature !== undefined) {
+                        dataHtml += `Temperature: ${liveData.temperature.toFixed(1)}°C<br>`;
+                    }
+                    if (liveData.timestamp) {
+                        const time = new Date(liveData.timestamp).toLocaleTimeString();
+                        dataHtml += `<small style="color:#888">Updated: ${time}</small>`;
+                    }
+                } else if (dataLoadError) {
+                    dataHtml = `<span style="color:#ff6b6b">API Error: ${dataLoadError}</span>`;
+                } else {
+                    dataHtml = '<span style="color:#888">Loading data...</span>';
+                    // Trigger a fetch for this specific tank
+                    loadTankDetails(assetId).then(() => {
+                        if (selectedObject && selectedObject.name === assetId) {
+                            updateInfoPanel(selectedObject);
+                        }
+                    });
+                }
+                
+                if (metadata) {
+                    if (metadata.product_service) {
+                        dataHtml = `Product: ${metadata.product_service}<br>` + dataHtml;
+                    }
+                    if (metadata.capacity_litres) {
+                        dataHtml += `<br>Capacity: ${Math.round(metadata.capacity_litres).toLocaleString()} L`;
+                    }
+                }
+                
+                document.getElementById('asset-data').innerHTML = dataHtml;
+            } else {
+                document.getElementById('asset-data').innerText = '';
+            }
             
             panel.style.display = 'block';
+        }
+
+        // --- Update Tank Visuals Based on Live Data ---
+        function updateTankVisuals() {
+            tanksGroup.children.forEach(tank => {
+                if (tank === selectedObject) return; // Don't change selected tank color
+                
+                const assetId = tank.name;
+                const liveData = tankDataCache[assetId];
+                
+                let level_pct = null;
+                if (liveData && liveData.level_percentage !== undefined) {
+                    level_pct = liveData.level_percentage;
+                }
+                
+                // Update color based on level (only if we have data and material supports it)
+                if (level_pct !== null && tank.material && tank.material.color) {
+                    if (level_pct > 90) tank.material.color.setHex(0xff0000);       // Critical high - red
+                    else if (level_pct > 80) tank.material.color.setHex(0xffa500);  // Warning high - orange
+                    else if (level_pct > 10) tank.material.color.setHex(0x008000);  // Normal - green
+                    else tank.material.color.setHex(0x4169e1);                       // Low - blue
+                } else if (tank.userData.isProcedural && tank.material && tank.material.color) {
+                    // Fallback animation for procedural tanks without live data
+                    const time = Date.now() * 0.0005;
+                    const noise = Math.sin(time + tank.position.x);
+                    const simLevel = (noise + 1) / 2 * 100;
+                    
+                    if (simLevel > 90) tank.material.color.setHex(0xff0000);
+                    else if (simLevel > 80) tank.material.color.setHex(0xffa500);
+                    else if (simLevel > 10) tank.material.color.setHex(0x008000);
+                    else tank.material.color.setHex(0x4169e1);
+                }
+            });
         }
 
         // --- Animation Loop ---
@@ -212,19 +603,8 @@
             requestAnimationFrame(animate);
             controls.update();
             
-            // Simulate live data updates for tank colors
-            tanksGroup.children.forEach(tank => {
-                const time = Date.now() * 0.0005;
-                const noise = Math.sin(time + tank.position.x);
-                const level_pct = (noise + 1) / 2 * 100; // 0 to 100
-                
-                if (tank !== selectedObject) { // Don't change color if selected
-                    if (level_pct > 90) tank.material.color.setHex(0xff0000);
-                    else if (level_pct > 80) tank.material.color.setHex(0xffa500);
-                    else if (level_pct > 10) tank.material.color.setHex(0x008000);
-                    else tank.material.color.setHex(0x4169e1);
-                }
-            });
+            // Update tank colors (live data or fallback animation)
+            updateTankVisuals();
 
             renderer.render(scene, camera);
         }
@@ -238,9 +618,26 @@
         window.addEventListener('click', onMouseClick);
         
         // --- Initialization ---
-        createDepot();
-        camera.position.set(60, 100, 120);
-        controls.target.set(30, 0, -50);
+        updateModeButton();
+        if (useGLBModel) {
+            loadGLBModel();
+        } else {
+            createProceduralDepot();
+        }
+        
+        // API Key button handler
+        document.getElementById('api-key-btn').addEventListener('click', () => {
+            const currentKey = localStorage.getItem('depot_api_key') || '';
+            const newKey = prompt('Enter API Key (check your .env file for API_KEY value):', currentKey);
+            if (newKey !== null) {
+                localStorage.setItem('depot_api_key', newKey);
+                location.reload(); // Reload to use new key
+            }
+        });
+        
+        // Start fetching live data from API
+        startDataPolling();
+        
         animate();
 
     </script>

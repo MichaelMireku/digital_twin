@@ -96,7 +96,7 @@ def on_message(client, userdata, msg):
                 status=sensor_data.status
             )
             if success:
-                logger.info(f"✅ Successfully saved reading for {asset_id}/{metric_name}")
+                logger.info(f"Successfully saved reading for {asset_id}/{metric_name}")
             else:
                 logger.error(f"Failed to save reading for {asset_id}/{metric_name}")
 

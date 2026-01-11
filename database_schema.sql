@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS assets (
     asset_id VARCHAR(50) PRIMARY KEY,
     asset_type VARCHAR(50) NOT NULL,
-    depot_id VARCHAR(20) DEFAULT 'DEMO_DEPOT_01',
+    depot_id VARCHAR(20) DEFAULT 'DEMO_DEPOT',
     description VARCHAR(255),
     area VARCHAR(10),
     pump_house_id VARCHAR(50),
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS assets (
     maintenance_notes TEXT,
     notes TEXT,
     foam_system_present BOOLEAN DEFAULT FALSE,
+    flow_rate_lpm NUMERIC,  -- Pump flow rate in litres per minute
     high_level_threshold_m NUMERIC,
     low_level_threshold_m NUMERIC,
     high_high_level_threshold_m NUMERIC,

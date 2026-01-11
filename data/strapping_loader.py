@@ -8,14 +8,14 @@ logger = logging.getLogger(__name__)
 
 # --- Global Cache for Strapping Tables ---
 # Cache to store loaded strapping tables in memory to avoid repeated file I/O
-# Key: asset_id (e.g., 'TANK_101'), Value: Dict[int, float] (level_mm -> volume_litres)
+# Key: asset_id (e.g., 'TK-A01'), Value: Dict[int, float] (level_mm -> volume_litres)
 _strapping_tables_cache: Dict[str, Dict[int, float]] = {}
 
 # --- Configuration for Strapping Data ---
 # Assumes strapping CSVs are in a subdirectory named 'strapping' within this 'data' directory.
-# e.g., data/strapping/TANK_101.csv
+# e.g., data/strapping/TK-A01.csv
 STRAPPING_DATA_BASE_PATH = os.path.join(os.path.dirname(__file__), 'strapping')
-DEFAULT_STRAPPING_FILENAME_TEMPLATE = "{asset_id}.csv" # e.g., TANK_101.csv
+DEFAULT_STRAPPING_FILENAME_TEMPLATE = "{asset_id}.csv" # e.g., TK-A01.csv
 
 def _load_single_strapping_table_from_csv(file_path: str) -> Optional[Dict[int, float]]:
     """
@@ -109,11 +109,11 @@ def clear_strapping_cache():
 
 # Example of how to ensure this runs if this script is executed directly for testing
 # if __name__ == '__main__':
-#     logging.basicConfig(level=logging.INFO) # Ensure logging is configured for standalone test
+#     logging.basicConfig(level=logging.INFO)
 #     print(f"Looking for strapping tables in: {STRAPPING_DATA_BASE_PATH}")
     
-#     # Example: Test loading for a specific tank (assuming TANK_101.csv exists)
-#     test_tank_id = 'TANK_101'
+#     # Example: Test loading for a specific tank
+#     test_tank_id = 'TK-A01'
 #     table = get_strapping_table_litres(test_tank_id)
 #     if table:
 #         print(f"\nStrapping table for {test_tank_id} (first 5 entries):")
@@ -124,10 +124,7 @@ def clear_strapping_cache():
 #                 break
 #         print(f"Total entries for {test_tank_id}: {len(table)}")
 #     else:
-#         print(f"\nCould not load strapping table for {test_tank_id}. Ensure '{test_tank_id}.csv' exists in '{STRAPPING_DATA_BASE_PATH}'.")
+#         print(f"\nCould not load strapping table for {test_tank_id}.")
 
-#     # Example: Preload
-#     # preload_all_strapping_tables(['TANK_101', 'TANK_102', 'NON_EXISTENT_TANK'])
-#     # print(_strapping_tables_cache.keys())
-#     # clear_strapping_cache()
-#     # print(_strapping_tables_cache.keys())
+#     # Example: Preload multiple tanks
+#     # preload_all_strapping_tables(['TK-A01', 'TK-A02', 'TK-B01'])

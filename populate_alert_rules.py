@@ -64,7 +64,7 @@ def populate_rules(db: Session):
 
         db.add_all(new_rules_to_add)
         db.commit()
-        logging.info(f"✅ Successfully added {len(new_rules_to_add)} new alert rules to the database.")
+        logging.info(f"Successfully added {len(new_rules_to_add)} new alert rules to the database.")
 
     except Exception as e:
         logging.error(f"Failed to populate alert rules: {e}", exc_info=True)

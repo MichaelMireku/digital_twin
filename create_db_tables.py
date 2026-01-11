@@ -28,7 +28,7 @@ def main():
         # classes that inherit from it, and creates the corresponding tables.
         # This is safe to run multiple times; it will not recreate existing tables.
         Base.metadata.create_all(bind=engine)
-        logging.info("✅ All tables created successfully (or already exist).")
+        logging.info("All tables created successfully (or already exist).")
         logging.info("Your database schema is now up-to-date.")
 
     except Exception as e:

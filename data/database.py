@@ -221,7 +221,7 @@ def save_alert(db: Session, asset_id: str, alert_name: str, message: str,
         )
         db.add(new_alert)
         db.commit()
-        logger.info(f"✅ New alert '{alert_name}' for asset '{asset_id}' saved.")
+        logger.info(f"New alert '{alert_name}' for asset '{asset_id}' saved.")
         return new_alert.alert_id
     except Exception as e:
         logger.error(f"Error saving alert for asset {asset_id}, alert {alert_name}: {e}", exc_info=True)
