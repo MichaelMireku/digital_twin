@@ -38,7 +38,7 @@ services:
       - key: API_KEY
         sync: false
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.7"
 
   - type: web
     name: depot-dashboard
@@ -73,7 +73,7 @@ services:
       - key: API_BASE_URL
         value: "https://depot-api.onrender.com"
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.7"
 
   # Static site for 3D viewer
   - type: web
