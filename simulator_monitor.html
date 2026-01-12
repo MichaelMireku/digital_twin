@@ -155,6 +155,7 @@
             <button id="connectBtn" class="btn btn-primary" onclick="toggleConnection()">Connect</button>
             <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
             <button class="btn btn-secondary" onclick="testPublish()" style="margin-left: 10px;">Test Publish</button>
+            <button class="btn btn-secondary" onclick="subscribeToAllTopics()" style="margin-left: 10px;">Subscribe All (#)</button>
         </div>
     </div>
     
@@ -241,6 +242,12 @@
                 client.subscribe(topic, (err) => {
                     if (!err) {
                         addLog('system', `Subscribed to: ${topic}`, 'info');
+                        // Also subscribe to a broader wildcard to catch any messages
+                        client.subscribe('#', (err2) => {
+                            if (!err2) {
+                                addLog('system', `Also subscribed to # (all topics) for debugging`, 'info');
+                            }
+                        });
                     } else {
                         addLog('system', `Subscribe error: ${err.message}`, 'error');
                     }
@@ -251,6 +258,9 @@
                 messageCount++;
                 document.getElementById('msgCount').textContent = messageCount;
                 document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+                // Debug: Log raw topic to console
+                console.log('Received message on topic:', topic, 'Raw bytes:', Array.from(topic).map(c => c.charCodeAt(0)));
 
                 try {
                     const data = JSON.parse(message.toString());
@@ -359,6 +369,23 @@
                     addLog('system', `Test publish failed: ${err.message}`, 'error');
                 } else {
                     addLog('system', `Test message published to ${testTopic}`, 'info');
+                }
+            });
+        }
+
+        function subscribeToAllTopics() {
+            if (!connected || !client) {
+                addLog('system', 'Not connected. Please connect first.', 'error');
+                return;
+            }
+            
+            // Subscribe to root wildcard to catch ALL messages on the broker
+            const wildcardTopic = '#';
+            client.subscribe(wildcardTopic, (err) => {
+                if (!err) {
+                    addLog('system', `Subscribed to ALL topics (#) - will show any message on broker`, 'info');
+                } else {
+                    addLog('system', `Subscribe to # failed: ${err.message}`, 'error');
                 }
             });
         }
