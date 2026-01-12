@@ -96,6 +96,16 @@
         // --- API Configuration ---
         // Auto-detect API URL: use relative path if same origin, or configure for deployed environment
         const API_BASE_URL = window.DEPOT_API_URL || '/api/v1';
+        
+        // Check for API key in URL parameter first (allows bookmarking with key)
+        // URL format: 3dview.html?apikey=YOUR_KEY
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlApiKey = urlParams.get('apikey');
+        if (urlApiKey) {
+            localStorage.setItem('depot_api_key', urlApiKey);
+            // Clean URL without reloading (removes key from address bar for security)
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
         const API_KEY = localStorage.getItem('depot_api_key') || '';
         const POLL_INTERVAL_MS = 5000; // Refresh tank data every 5 seconds
         
