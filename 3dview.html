@@ -473,15 +473,44 @@
 
         // --- Interaction ---
         const raycaster = new THREE.Raycaster();
+        // Increase threshold for touch devices (fingers are less precise)
+        raycaster.params.Line.threshold = 3;
+        raycaster.params.Points.threshold = 3;
         const mouse = new THREE.Vector2();
         let selectedObject = null;
+        
+        // Touch handling for mobile
+        let touchStartPos = { x: 0, y: 0 };
+        let touchStartTime = 0;
+        const TAP_THRESHOLD = 15; // Max pixels moved to count as tap
+        const TAP_TIME_THRESHOLD = 300; // Max ms for a tap
 
-        function onMouseClick(event) {
-            // Ignore clicks on UI elements
-            if (event.target.tagName === 'BUTTON') return;
+        function getPointerPosition(event) {
+            let clientX, clientY;
             
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            if (event.changedTouches && event.changedTouches.length > 0) {
+                clientX = event.changedTouches[0].clientX;
+                clientY = event.changedTouches[0].clientY;
+            } else if (event.touches && event.touches.length > 0) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            
+            return { clientX, clientY };
+        }
+
+        function handleInteraction(event) {
+            // Ignore clicks on UI elements
+            const target = event.target;
+            if (target.tagName === 'BUTTON' || target.id === 'info-panel' || target.closest('#info-panel')) return;
+            
+            const { clientX, clientY } = getPointerPosition(event);
+            
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             
             // Check both tanksGroup and all meshes in depotGroup
@@ -516,6 +545,34 @@
                 }
                 selectedObject = null;
                 document.getElementById('info-panel').style.display = 'none';
+            }
+        }
+
+        function onMouseClick(event) {
+            handleInteraction(event);
+        }
+
+        function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                const { clientX, clientY } = getPointerPosition(event);
+                touchStartPos = { x: clientX, y: clientY };
+                touchStartTime = Date.now();
+            }
+        }
+
+        function onTouchEnd(event) {
+            // Only handle single-finger taps (not pinch/pan gestures)
+            if (event.changedTouches.length !== 1) return;
+            
+            const { clientX, clientY } = getPointerPosition(event);
+            const dx = clientX - touchStartPos.x;
+            const dy = clientY - touchStartPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const duration = Date.now() - touchStartTime;
+            
+            // Check if this was a tap (short duration, minimal movement)
+            if (distance < TAP_THRESHOLD && duration < TAP_TIME_THRESHOLD) {
+                handleInteraction(event);
             }
         }
         
@@ -626,6 +683,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         window.addEventListener('click', onMouseClick);
+        
+        // Mobile touch support
+        renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: true });
+        renderer.domElement.addEventListener('touchend', onTouchEnd, { passive: false });
         
         // --- Initialization ---
         updateModeButton();
