@@ -84,6 +84,14 @@
     </style>
 </head>
 <body>
+    <script>
+        // Set API key for 3D view and other components
+        window.DEPOT_API_KEY = "depot_RNQhwoYATucIJC2CL66XE7EgLiTVqpB6";
+        // Also store in localStorage for 3dview.html to pick up
+        if (!localStorage.getItem('depot_api_key')) {
+            localStorage.setItem('depot_api_key', window.DEPOT_API_KEY);
+        }
+    </script>
     <div class="header">
         <h1>Depot Digital Twin</h1>
         <p class="subtitle">Fuel Storage Monitoring & Simulation Platform</p>
@@ -116,5 +124,10 @@
     <div class="footer">
         <p>Depot Digital Twin Platform | 2026</p>
     </div>
+
+    <script>
+        // Set API key for 3D view
+        localStorage.setItem('depot_api_key', 'depot_RNQhwoYATucIJC2CL66XE7EgLiTVqpB6');
+    </script>
 </body>
 </html>
