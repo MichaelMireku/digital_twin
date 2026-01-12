@@ -20,7 +20,7 @@ except ImportError as e:
     print(f"CRITICAL API ERROR: Could not import core modules: {e}")
     sys.exit(1)
 
-from flask import Flask, jsonify, abort, request
+from flask import Flask, jsonify, abort, request, send_from_directory
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, conint, ValidationError
 from typing import Any, Optional, List, Literal, Dict
@@ -79,6 +79,21 @@ def internal_server_error(e):
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify(status="ok")
+
+@app.route('/simulator-monitor')
+def serve_simulator_monitor():
+    """Serve the simulator monitor HTML page."""
+    return send_from_directory(project_root, 'simulator_monitor.html')
+
+@app.route('/3dview')
+def serve_3dview():
+    """Serve the 3D view HTML page."""
+    return send_from_directory(project_root, '3dview.html')
+
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    """Serve static assets."""
+    return send_from_directory(os.path.join(project_root, 'assets'), filename)
 
 @app.route('/api/v1/assets', methods=['GET'])
 @require_api_key
