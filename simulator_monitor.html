@@ -13,6 +13,7 @@
             color: #000000;
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
         .header {
             display: flex;
@@ -21,8 +22,10 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        h1 { color: #000000; font-size: 1.5rem; }
+        h1 { color: #000000; font-size: 1.5rem; word-break: break-word; }
         .status {
             padding: 8px 16px;
             border-radius: 20px;
@@ -131,6 +134,35 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Mobile responsive fixes */
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            h1 { font-size: 1.25rem; }
+            .config-panel { padding: 15px; }
+            .config-panel p { word-break: break-word; }
+            .config-panel code { word-break: break-all; }
+            .config-row { grid-template-columns: 1fr; }
+            .config-panel .btn { 
+                display: block; 
+                width: 100%; 
+                margin: 8px 0; 
+                margin-left: 0 !important;
+            }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .stat-value { font-size: 1.5rem; }
+            .log-header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 10px; 
+            }
+            .log-entry { 
+                font-size: 0.75rem; 
+                padding: 6px 8px;
+                word-break: break-word;
+            }
+            #log { height: 350px; }
         }
     </style>
 </head>
