@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 Combined runner for Railway deployment.
-Starts both the API server and sensor simulator in parallel.
+Starts the sensor simulator and processing service.
+Note: API server runs separately on Render (see render.yaml).
 """
 import subprocess
 import sys
@@ -23,21 +24,10 @@ def main():
     signal.signal(signal.SIGTERM, cleanup)
     signal.signal(signal.SIGINT, cleanup)
     
-    print("Starting Depot Services...")
+    print("Starting Depot Background Services (Railway)...")
+    print("Note: API server runs on Render separately.")
     
-    # Start API server
-    api_proc = subprocess.Popen(
-        [sys.executable, "-m", "api.app"],
-        stdout=sys.stdout,
-        stderr=sys.stderr
-    )
-    processes.append(api_proc)
-    print(f"API server started (PID: {api_proc.pid})")
-    
-    # Give API a moment to start
-    time.sleep(2)
-    
-    # Start sensor simulator
+    # Start sensor simulator (publishes to MQTT)
     sim_proc = subprocess.Popen(
         [sys.executable, "-m", "sensor_simulator.sensor_simulator"],
         stdout=sys.stdout,
@@ -45,6 +35,18 @@ def main():
     )
     processes.append(sim_proc)
     print(f"Sensor simulator started (PID: {sim_proc.pid})")
+    
+    # Give simulator a moment to start publishing
+    time.sleep(2)
+    
+    # Start processing service (subscribes to MQTT and saves to DB)
+    proc_proc = subprocess.Popen(
+        [sys.executable, "processing_service.py"],
+        stdout=sys.stdout,
+        stderr=sys.stderr
+    )
+    processes.append(proc_proc)
+    print(f"Processing service started (PID: {proc_proc.pid})")
     
     # Wait for processes
     while True:

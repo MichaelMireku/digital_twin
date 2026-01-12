@@ -143,27 +143,32 @@
     <div class="config-panel">
         <h3>MQTT Configuration</h3>
         <p style="color: #666; font-size: 0.85rem; margin-bottom: 15px;">
-            Connects to HiveMQ Cloud broker. Make sure the sensor simulator is running on Railway to see live data.
+            Connects to HiveMQ Cloud broker via WebSocket (port 8884). The Railway sensor simulator publishes to <code>demo/depot/dev/sensor/{assetId}/{metric}/data</code>.
         </p>
         <div class="config-row">
             <div class="config-field">
                 <label>Topic (subscribe)</label>
                 <input type="text" id="topic" value="demo/depot/dev/#" />
             </div>
+            <div class="config-field">
+                <label>Base Topic (for simulator)</label>
+                <input type="text" id="baseTopicInput" value="demo/depot/dev" readonly style="background: #eee;" />
+            </div>
         </div>
         <div style="margin-top: 15px;">
             <button id="connectBtn" class="btn btn-primary" onclick="toggleConnection()">Connect</button>
             <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
-            <button class="btn btn-secondary" onclick="testPublish()" style="margin-left: 10px;">Test Publish</button>
-            <button class="btn btn-secondary" onclick="subscribeToAllTopics()" style="margin-left: 10px;">Subscribe All (#)</button>
+            <button class="btn btn-secondary" onclick="subscribeToSimulatorTopics()" style="margin-left: 10px;">Subscribe to Simulator</button>
         </div>
     </div>
     
-    <!-- Hidden config values -->
+    <!-- Hidden config values - HiveMQ Cloud WebSocket connection -->
+    <!-- Note: Port 8884 is for WSS (WebSocket Secure), Port 8883 is for MQTT over TLS -->
     <input type="hidden" id="broker" value="ba959be4d2874a21ae71690f1de8da95.s1.eu.hivemq.cloud" />
     <input type="hidden" id="port" value="8884" />
     <input type="hidden" id="username" value="chief" />
     <input type="hidden" id="password" value="Engineer1" />
+    <input type="hidden" id="baseTopic" value="demo/depot/dev" />
 
     <div class="stats">
         <div class="stat-card">
@@ -193,6 +198,7 @@
         let connected = false;
         let messageCount = 0;
         let activeTanks = new Set();
+        const baseTopic = document.getElementById('baseTopic')?.value || 'demo/depot/dev';
 
         function updateStatus(status, text) {
             const el = document.getElementById('status');
@@ -220,7 +226,8 @@
 
             const url = `wss://${broker}:${port}/mqtt`;
             
-            addLog('system', `Attempting connection to ${url}...`, 'info');
+            addLog('system', `Connecting to HiveMQ Cloud via WebSocket...`, 'info');
+            addLog('system', `URL: ${url}`, 'info');
             
             client = mqtt.connect(url, {
                 username: username,
@@ -237,21 +244,29 @@
                 updateStatus('connected', 'Connected');
                 document.getElementById('connectBtn').textContent = 'Disconnect';
                 document.getElementById('connectBtn').className = 'btn btn-danger';
-                addLog('system', `Connected to ${broker}`, 'info');
+                addLog('system', `Connected to HiveMQ Cloud broker`, 'info');
                 
-                client.subscribe(topic, (err) => {
+                // Subscribe to the sensor simulator topics
+                // The Railway sensor simulator publishes to: {baseTopic}/sensor/{assetId}/{metric}/data
+                const sensorTopic = `${baseTopic}/sensor/#`;
+                
+                client.subscribe(sensorTopic, { qos: 0 }, (err) => {
                     if (!err) {
-                        addLog('system', `Subscribed to: ${topic}`, 'info');
-                        // Also subscribe to a broader wildcard to catch any messages
-                        client.subscribe('#', (err2) => {
-                            if (!err2) {
-                                addLog('system', `Also subscribed to # (all topics) for debugging`, 'info');
-                            }
-                        });
+                        addLog('system', `Subscribed to sensor data: ${sensorTopic}`, 'info');
+                        addLog('system', `Waiting for data from Railway sensor simulator...`, 'info');
                     } else {
                         addLog('system', `Subscribe error: ${err.message}`, 'error');
                     }
                 });
+                
+                // Also subscribe to the user-specified topic if different
+                if (topic && topic !== sensorTopic && topic !== `${baseTopic}/#`) {
+                    client.subscribe(topic, { qos: 0 }, (err) => {
+                        if (!err) {
+                            addLog('system', `Also subscribed to: ${topic}`, 'info');
+                        }
+                    });
+                }
             });
 
             client.on('message', (topic, message) => {
@@ -259,26 +274,34 @@
                 document.getElementById('msgCount').textContent = messageCount;
                 document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
 
-                // Debug: Log raw topic to console
-                console.log('Received message on topic:', topic, 'Raw bytes:', Array.from(topic).map(c => c.charCodeAt(0)));
-
                 try {
                     const data = JSON.parse(message.toString());
                     const parts = topic.split('/');
-                    // Topic structure: {base}/sensor/{assetId}/{metric}/data
+                    
+                    // Topic structure from simulator: {baseTopic}/sensor/{assetId}/{metric}/data
                     // e.g., demo/depot/dev/sensor/TK-A04/level_mm/data
                     const sensorIndex = parts.indexOf('sensor');
-                    const assetId = sensorIndex >= 0 ? parts[sensorIndex + 1] : (parts[3] || 'unknown');
-                    const metric = sensorIndex >= 0 ? parts[sensorIndex + 2] : (parts[4] || 'unknown');
+                    let assetId = 'unknown';
+                    let metric = 'unknown';
+                    
+                    if (sensorIndex >= 0 && parts.length > sensorIndex + 2) {
+                        assetId = parts[sensorIndex + 1];
+                        metric = parts[sensorIndex + 2];
+                    }
                     
                     activeTanks.add(assetId);
                     document.getElementById('tankCount').textContent = activeTanks.size;
 
-                    const logType = metric.includes('level') ? 'level' : 
-                                   metric.includes('temp') ? 'temperature' : 'info';
+                    // Determine log type based on metric
+                    let logType = 'info';
+                    if (metric.includes('level')) logType = 'level';
+                    else if (metric.includes('temp')) logType = 'temperature';
+                    else if (metric.includes('pump') || metric.includes('motor')) logType = 'level';
                     
-                    addLog(topic, `${assetId} → ${metric}: ${data.value} ${data.unit || ''}`, logType);
+                    const valueStr = data.value !== undefined ? `${data.value} ${data.unit || ''}` : message.toString();
+                    addLog(topic, `${assetId} → ${metric}: ${valueStr}`, logType);
                 } catch (e) {
+                    // Non-JSON message
                     addLog(topic, message.toString(), 'info');
                 }
             });
@@ -325,8 +348,10 @@
             entry.className = `log-entry ${type}`;
             
             const time = new Date().toLocaleTimeString();
+            // Show a shorter topic path for readability
+            const shortTopic = topic.split('/').slice(-3).join('/');
             entry.innerHTML = `<span class="log-time">${time}</span>` +
-                            `<span class="log-topic">[${topic.split('/').slice(-2).join('/')}]</span> ` +
+                            `<span class="log-topic">[${shortTopic}]</span> ` +
                             `<span class="log-value">${message}</span>`;
             
             log.appendChild(entry);
@@ -349,51 +374,36 @@
             document.getElementById('tankCount').textContent = '0';
         }
 
-        function testPublish() {
+        function subscribeToSimulatorTopics() {
             if (!connected || !client) {
                 addLog('system', 'Not connected. Please connect first.', 'error');
                 return;
             }
             
-            const testPayload = {
-                value: Math.round(Math.random() * 10000),
-                unit: "mm",
-                timestamp_utc: new Date().toISOString(),
-                source: "web_monitor_test"
-            };
+            // Subscribe to all sensor topics from the Railway simulator
+            const topics = [
+                `${baseTopic}/sensor/+/level_mm/data`,      // Tank levels
+                `${baseTopic}/sensor/+/temperature/data`,   // Tank temperatures
+                `${baseTopic}/sensor/+/pump_status/data`,   // Pump status
+                `${baseTopic}/sensor/+/motor_current/data`  // Motor current
+            ];
             
-            const testTopic = 'demo/depot/dev/sensor/TEST-TANK/level_mm/data';
-            
-            client.publish(testTopic, JSON.stringify(testPayload), (err) => {
-                if (err) {
-                    addLog('system', `Test publish failed: ${err.message}`, 'error');
-                } else {
-                    addLog('system', `Test message published to ${testTopic}`, 'info');
-                }
-            });
-        }
-
-        function subscribeToAllTopics() {
-            if (!connected || !client) {
-                addLog('system', 'Not connected. Please connect first.', 'error');
-                return;
-            }
-            
-            // Subscribe to root wildcard to catch ALL messages on the broker
-            const wildcardTopic = '#';
-            client.subscribe(wildcardTopic, (err) => {
-                if (!err) {
-                    addLog('system', `Subscribed to ALL topics (#) - will show any message on broker`, 'info');
-                } else {
-                    addLog('system', `Subscribe to # failed: ${err.message}`, 'error');
-                }
+            topics.forEach(topic => {
+                client.subscribe(topic, { qos: 0 }, (err) => {
+                    if (!err) {
+                        addLog('system', `Subscribed: ${topic}`, 'info');
+                    } else {
+                        addLog('system', `Failed to subscribe to ${topic}: ${err.message}`, 'error');
+                    }
+                });
             });
         }
 
         // Auto-connect on page load
         window.addEventListener('load', () => {
-            addLog('system', 'Page loaded. Click Connect to start receiving messages.', 'info');
-            addLog('system', 'Note: Ensure the sensor simulator is running on Railway for live data.', 'info');
+            addLog('system', 'Sensor Simulator Monitor ready', 'info');
+            addLog('system', 'Click "Connect" to receive data from Railway sensor simulator', 'info');
+            addLog('system', `Expected topic pattern: ${baseTopic}/sensor/{assetId}/{metric}/data`, 'info');
         });
     </script>
 </body>
