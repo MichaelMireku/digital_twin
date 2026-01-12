@@ -319,8 +319,8 @@
                 const points = pathStr.replace(/[M,Z]/g, '').replace(/L/g, '|').trim().split('|');
                 points.forEach((pointStr, index) => {
                     const [x, y] = pointStr.trim().split(' ').map(Number);
-                    if (index === 0) shape.moveTo(x - 70, -(y - 60));
-                    else shape.lineTo(x - 70, -(y - 60));
+                    if (index === 0) shape.moveTo(x - 70, y - 60);
+                    else shape.lineTo(x - 70, y - 60);
                 });
                 const extrudeSettings = { depth: 2, bevelEnabled: false };
                 const wallGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);

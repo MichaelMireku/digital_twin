@@ -974,7 +974,8 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
     fig.update_layout(
         title=None,
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 145]),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 120]),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 145]),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 120], scaleanchor="x", scaleratio=1),
         plot_bgcolor='#0a0f1a',
         paper_bgcolor='rgba(0,0,0,0)',
         showlegend=False,
@@ -988,7 +989,7 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
         )
     )
     
-    return dcc.Graph(id='depot-hmi-graph', figure=fig, config={'displayModeBar': False})
+    return dcc.Graph(id='depot-hmi-graph', figure=fig, config={'displayModeBar': False}, style={'minWidth': '500px', 'margin': '0 auto'})
 
 
 def build_inventory_chart(tanks_data):
@@ -1114,11 +1115,13 @@ def build_overview_layout():
                             })
                         ])
                     ], className="d-flex justify-content-between align-items-center mb-4"),
-                    dcc.Loading(
-                        type="circle",
-                        color="#3b82f6",
-                        children=html.Div(id='depot-hmi-view-container')
-                    ),
+                    html.Div([
+                        dcc.Loading(
+                            type="circle",
+                            color="#3b82f6",
+                            children=html.Div(id='depot-hmi-view-container')
+                        )
+                    ], style={'overflowX': 'auto', 'width': '100%'}, className="hmi-scroll-container"),
                     # Legend
                     html.Div([
                         html.Div([html.Div(className="legend-dot", style={"background": "#10b981"}), "Normal"], className="legend-item"),
