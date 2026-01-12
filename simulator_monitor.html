@@ -142,6 +142,9 @@
 
     <div class="config-panel">
         <h3>MQTT Configuration</h3>
+        <p style="color: #666; font-size: 0.85rem; margin-bottom: 15px;">
+            Connects to HiveMQ Cloud broker. Make sure the sensor simulator is running on Railway to see live data.
+        </p>
         <div class="config-row">
             <div class="config-field">
                 <label>Topic (subscribe)</label>
@@ -151,6 +154,7 @@
         <div style="margin-top: 15px;">
             <button id="connectBtn" class="btn btn-primary" onclick="toggleConnection()">Connect</button>
             <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
+            <button class="btn btn-secondary" onclick="testPublish()" style="margin-left: 10px;">Test Publish</button>
         </div>
     </div>
     
@@ -215,11 +219,16 @@
 
             const url = `wss://${broker}:${port}/mqtt`;
             
+            addLog('system', `Attempting connection to ${url}...`, 'info');
+            
             client = mqtt.connect(url, {
                 username: username,
                 password: password,
                 protocol: 'wss',
-                reconnectPeriod: 5000
+                reconnectPeriod: 5000,
+                connectTimeout: 30000,
+                clean: true,
+                clientId: 'web_monitor_' + Math.random().toString(16).substr(2, 8)
             });
 
             client.on('connect', () => {
@@ -265,8 +274,18 @@
             });
 
             client.on('error', (err) => {
-                addLog('system', `Error: ${err.message}`, 'error');
+                addLog('system', `Connection Error: ${err.message}`, 'error');
                 updateStatus('disconnected', 'Error');
+                console.error('MQTT Error:', err);
+            });
+
+            client.on('offline', () => {
+                addLog('system', 'Client went offline', 'error');
+            });
+
+            client.on('reconnect', () => {
+                addLog('system', 'Attempting to reconnect...', 'info');
+                updateStatus('connecting', 'Reconnecting...');
             });
 
             client.on('close', () => {
@@ -319,6 +338,36 @@
             document.getElementById('msgCount').textContent = '0';
             document.getElementById('tankCount').textContent = '0';
         }
+
+        function testPublish() {
+            if (!connected || !client) {
+                addLog('system', 'Not connected. Please connect first.', 'error');
+                return;
+            }
+            
+            const testPayload = {
+                value: Math.round(Math.random() * 10000),
+                unit: "mm",
+                timestamp_utc: new Date().toISOString(),
+                source: "web_monitor_test"
+            };
+            
+            const testTopic = 'demo/depot/dev/sensor/TEST-TANK/level_mm/data';
+            
+            client.publish(testTopic, JSON.stringify(testPayload), (err) => {
+                if (err) {
+                    addLog('system', `Test publish failed: ${err.message}`, 'error');
+                } else {
+                    addLog('system', `Test message published to ${testTopic}`, 'info');
+                }
+            });
+        }
+
+        // Auto-connect on page load
+        window.addEventListener('load', () => {
+            addLog('system', 'Page loaded. Click Connect to start receiving messages.', 'info');
+            addLog('system', 'Note: Ensure the sensor simulator is running on Railway for live data.', 'info');
+        });
     </script>
 </body>
 </html>
