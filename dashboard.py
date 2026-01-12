@@ -109,6 +109,7 @@ body {
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
 }
 
 /* Clean Navbar */
@@ -120,6 +121,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
+    max-width: 100%;
 }
 
 .navbar-brand {
@@ -141,7 +143,6 @@ body {
     padding: 1.5rem;
     height: 100%;
     position: relative;
-    overflow: hidden;
     transition: all 0.2s ease;
 }
 
@@ -308,6 +309,8 @@ body {
     margin: 1.25rem 2rem;
     padding: 0.375rem;
     border: 1px solid var(--card-border);
+    max-width: calc(100% - 4rem);
+    overflow-x: auto;
 }
 
 .tab {
@@ -546,6 +549,7 @@ body {
     
     .tab-parent {
         margin: 1rem;
+        max-width: calc(100% - 2rem);
         overflow-x: auto;
     }
     
@@ -555,6 +559,10 @@ body {
     
     .glass-card {
         padding: 1rem;
+    }
+    
+    .p-4 {
+        padding: 1rem !important;
     }
 }
 
@@ -965,8 +973,8 @@ def build_depot_hmi_view(assets_data: list, fire_sim_results: dict = None) -> dc
 
     fig.update_layout(
         title=None,
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 125]),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 115]),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 145]),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0, 120]),
         plot_bgcolor='#0a0f1a',
         paper_bgcolor='rgba(0,0,0,0)',
         showlegend=False,

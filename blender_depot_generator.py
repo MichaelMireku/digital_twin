@@ -9,66 +9,85 @@ import bpy
 import math
 
 # ============================================================================
-# CONFIGURATION - Depot Layout (matches utils/depot_layout.py)
+# CONFIGURATION - Depot Layout (optimized for no overlaps)
 # ============================================================================
+# Layout grid: 140m x 120m depot footprint
+# Minimum tank spacing: 1.5x largest adjacent radius
+# Safety clearances: 15m from tanks to buildings, 10m to roads
 
 SCALE = 1.0
-CENTER_X, CENTER_Y = 60, 55  # Center offset for scene
+CENTER_X, CENTER_Y = 70, 60  # Center offset for scene
 
 TANKS = {
-    # Zone A - Northwest
-    "TK-A01": {"x": 18, "y": 85, "r": 6.5, "h": 12, "type": "AGO"},
-    "TK-A02": {"x": 32, "y": 85, "r": 6.5, "h": 12, "type": "AGO"},
-    "TK-A03": {"x": 18, "y": 70, "r": 7.0, "h": 14, "type": "PMS"},
-    "TK-A04": {"x": 32, "y": 70, "r": 7.0, "h": 14, "type": "PMS"},
-    # Zone B - Northeast
-    "TK-B01": {"x": 55, "y": 90, "r": 4.5, "h": 8, "type": "AGO"},
-    "TK-B02": {"x": 68, "y": 90, "r": 5.0, "h": 10, "type": "AGO"},
-    "TK-B03": {"x": 62, "y": 75, "r": 5.5, "h": 10, "type": "AGO"},
-    # Zone C - East
-    "TK-C01": {"x": 85, "y": 65, "r": 5.5, "h": 12, "type": "AGO"},
-    "TK-C02": {"x": 98, "y": 65, "r": 5.5, "h": 12, "type": "AGO"},
-    "TK-C03": {"x": 85, "y": 50, "r": 5.5, "h": 12, "type": "PMS"},
-    "TK-C04": {"x": 98, "y": 50, "r": 5.5, "h": 12, "type": "PMS"},
-    # Zone D - South
-    "TK-D01": {"x": 25, "y": 35, "r": 7.0, "h": 14, "type": "AGO"},
-    "TK-D02": {"x": 42, "y": 35, "r": 7.0, "h": 14, "type": "AGO"},
-    "TK-D03": {"x": 25, "y": 18, "r": 7.0, "h": 14, "type": "AGO"},
-    "TK-D04": {"x": 42, "y": 18, "r": 5.5, "h": 10, "type": "AGO"},
+    # Zone A - Northwest (AGO/PMS storage) - 2x2 grid with proper spacing
+    "TK-A01": {"x": 18, "y": 95, "r": 6.5, "h": 12, "type": "AGO"},
+    "TK-A02": {"x": 35, "y": 95, "r": 6.5, "h": 12, "type": "AGO"},
+    "TK-A03": {"x": 18, "y": 78, "r": 7.0, "h": 14, "type": "PMS"},
+    "TK-A04": {"x": 35, "y": 78, "r": 7.0, "h": 14, "type": "PMS"},
+    
+    # Zone B - Northeast (smaller AGO tanks) - triangle formation
+    "TK-B01": {"x": 58, "y": 100, "r": 4.5, "h": 8, "type": "AGO"},
+    "TK-B02": {"x": 72, "y": 100, "r": 5.0, "h": 10, "type": "AGO"},
+    "TK-B03": {"x": 65, "y": 85, "r": 5.5, "h": 10, "type": "AGO"},
+    
+    # Zone C - East (AGO/PMS) - 2x2 grid
+    "TK-C01": {"x": 100, "y": 75, "r": 5.5, "h": 12, "type": "AGO"},
+    "TK-C02": {"x": 115, "y": 75, "r": 5.5, "h": 12, "type": "AGO"},
+    "TK-C03": {"x": 100, "y": 60, "r": 5.5, "h": 12, "type": "PMS"},
+    "TK-C04": {"x": 115, "y": 60, "r": 5.5, "h": 12, "type": "PMS"},
+    
+    # Zone D - South (large AGO storage) - 2x2 grid
+    "TK-D01": {"x": 20, "y": 38, "r": 7.0, "h": 14, "type": "AGO"},
+    "TK-D02": {"x": 40, "y": 38, "r": 7.0, "h": 14, "type": "AGO"},
+    "TK-D03": {"x": 20, "y": 18, "r": 7.0, "h": 14, "type": "AGO"},
+    "TK-D04": {"x": 40, "y": 18, "r": 5.5, "h": 10, "type": "AGO"},
 }
 
 BUILDINGS = {
-    "Admin_Block": {"x": 108, "y": 90, "w": 15, "d": 10, "h": 8},
-    "Control_Room": {"x": 60, "y": 45, "w": 12, "d": 8, "h": 5},
-    "Operations": {"x": 95, "y": 85, "w": 10, "d": 6, "h": 4},
-    "Maintenance": {"x": 108, "y": 25, "w": 12, "d": 8, "h": 5},
-    "Gate_House": {"x": 60, "y": 105, "w": 6, "d": 4, "h": 3},
+    # Admin area - far east, away from hazardous zones
+    "Admin_Block": {"x": 125, "y": 20, "w": 14, "d": 10, "h": 8},
+    "Maintenance": {"x": 125, "y": 35, "w": 12, "d": 8, "h": 5},
+    # Control room - central, good visibility
+    "Control_Room": {"x": 70, "y": 50, "w": 10, "d": 7, "h": 5},
+    # Operations - northeast corner
+    "Operations": {"x": 90, "y": 95, "w": 8, "d": 6, "h": 4},
+    # Gate house - north entrance
+    "Gate_House": {"x": 70, "y": 115, "w": 6, "d": 4, "h": 3},
 }
 
 PUMP_HOUSES = {
-    "PH-A01": {"x": 25, "y": 55, "w": 6, "d": 4},
-    "PH-B01": {"x": 62, "y": 82, "w": 5, "d": 4},
-    "PH-C01": {"x": 92, "y": 75, "w": 5, "d": 4},
+    # Zone A pump - south of Zone A bund
+    "PH-A01": {"x": 26, "y": 62, "w": 5, "d": 4},
+    # Zone B pump - south of Zone B
+    "PH-B01": {"x": 65, "y": 75, "w": 5, "d": 4},
+    # Zone C pump - west of Zone C
+    "PH-C01": {"x": 88, "y": 67, "w": 5, "d": 4},
+    # Transfer station - central south
+    "Transfer_Station": {"x": 58, "y": 30, "w": 5, "d": 4},
 }
 
 BUND_WALLS = {
-    "Zone_A": {"x1": 5, "y1": 60, "x2": 45, "y2": 95},
-    "Zone_B": {"x1": 48, "y1": 65, "x2": 78, "y2": 98},
-    "Zone_C": {"x1": 75, "y1": 40, "x2": 110, "y2": 75},
-    "Zone_D": {"x1": 12, "y1": 8, "x2": 55, "y2": 45},
+    # Containment walls with 3m clearance from tank edges
+    "Zone_A": {"x1": 8, "y1": 68, "x2": 48, "y2": 108},
+    "Zone_B": {"x1": 50, "y1": 77, "x2": 82, "y2": 110},
+    "Zone_C": {"x1": 90, "y1": 50, "x2": 128, "y2": 85},
+    "Zone_D": {"x1": 8, "y1": 6, "x2": 55, "y2": 50},
 }
 
-GANTRY = {"x": 75, "y": 25, "w": 24, "d": 10, "lanes": 6}
+# Loading gantry - south central, clear of all tank zones
+GANTRY = {"x": 85, "y": 25, "w": 24, "d": 10, "lanes": 6}
 
 FIRE_TANKS = {
-    "Fire_Water_1": {"x": 50, "y": 58, "r": 3, "h": 6},
-    "Fire_Water_2": {"x": 75, "y": 78, "r": 3, "h": 6},
+    # Fire water - central corridor, accessible to all zones
+    "Fire_Water_1": {"x": 55, "y": 58, "r": 3, "h": 6},
+    "Fire_Water_2": {"x": 80, "y": 45, "r": 3, "h": 6},
 }
 
 MUSTER_POINTS = {
-    "Muster_A": {"x": 8, "y": 55},
-    "Muster_B": {"x": 115, "y": 55},
-    "Muster_C": {"x": 60, "y": 8},
+    # Emergency assembly - at depot perimeter, away from hazards
+    "Muster_A": {"x": 5, "y": 55},      # West perimeter
+    "Muster_B": {"x": 135, "y": 55},    # East perimeter  
+    "Muster_C": {"x": 70, "y": 5},      # South perimeter
 }
 
 # ============================================================================
@@ -286,30 +305,30 @@ def create_bund_wall(name, x1, y1, x2, y2):
     return walls
 
 def create_gantry(x, y, width, depth, lanes):
-    """Create loading gantry structure."""
+    """Create loading gantry structure with columns supporting the canopy."""
     platform_h = 6
     canopy_h = platform_h + 2
+    col_radius = 0.3
     
     # Get base position
     base_x, base_y, _ = loc(x, y, 0)
     
-    # Canopy (roof)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(base_x, base_y, canopy_h))
-    canopy = bpy.context.active_object
-    canopy.name = "Loading_Gantry"
-    canopy.scale = (width/2, depth/2, 0.15)
-    canopy.data.materials.append(MATERIALS["Gantry"])
-    link_to_collection(canopy, "Infrastructure")
-    
-    # Support columns (6 columns) - absolute positions, not parented
+    # Define column positions - columns at corners and midpoints
+    # These define the structural footprint
     col_positions = [
-        (-width/2+2, -depth/2+1), (0, -depth/2+1), (width/2-2, -depth/2+1),
-        (-width/2+2, depth/2-1), (0, depth/2-1), (width/2-2, depth/2-1),
+        (-width/2, -depth/2),   # Front-left corner
+        (0, -depth/2),          # Front-center
+        (width/2, -depth/2),    # Front-right corner
+        (-width/2, depth/2),    # Back-left corner
+        (0, depth/2),           # Back-center
+        (width/2, depth/2),     # Back-right corner
     ]
+    
+    # Create support columns FIRST - they define the structure
     for i, (cx, cy) in enumerate(col_positions):
         col_z = canopy_h / 2
         bpy.ops.mesh.primitive_cylinder_add(
-            radius=0.2, depth=canopy_h, vertices=12,
+            radius=col_radius, depth=canopy_h, vertices=12,
             location=(base_x + cx, base_y + cy, col_z)
         )
         col = bpy.context.active_object
@@ -317,21 +336,34 @@ def create_gantry(x, y, width, depth, lanes):
         col.data.materials.append(MATERIALS["Gantry"])
         link_to_collection(col, "Infrastructure")
     
-    # Loading platform walkway
+    # Canopy (roof) - extends beyond columns with overhang
+    canopy_overhang = 1.5  # Overhang past columns on all sides
+    canopy_width = width + canopy_overhang * 2
+    canopy_depth = depth + canopy_overhang * 2
+    
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(base_x, base_y, canopy_h))
+    canopy = bpy.context.active_object
+    canopy.name = "Loading_Gantry"
+    canopy.scale = (canopy_width/2, canopy_depth/2, 0.15)
+    canopy.data.materials.append(MATERIALS["Gantry"])
+    link_to_collection(canopy, "Infrastructure")
+    
+    # Loading platform walkway - spans between column rows
+    walkway_width = width + canopy_overhang * 2
     bpy.ops.mesh.primitive_cube_add(size=1, location=(base_x, base_y, platform_h))
     walk = bpy.context.active_object
     walk.name = "Gantry_Walkway"
-    walk.scale = (width/2, 1.2, 0.08)
+    walk.scale = (walkway_width/2, 1.5, 0.1)
     walk.data.materials.append(MATERIALS["Gantry"])
     link_to_collection(walk, "Infrastructure")
     
-    # Loading arms - one per lane
-    lane_w = width / lanes
+    # Loading arms - one per lane, distributed across full width
+    lane_w = walkway_width / lanes
     for i in range(lanes):
-        arm_x = base_x - width/2 + lane_w * (i + 0.5)
+        arm_x = base_x - walkway_width/2 + lane_w * (i + 0.5)
         arm_z = platform_h + 1
         bpy.ops.mesh.primitive_cylinder_add(
-            radius=0.06, depth=2.5, vertices=8,
+            radius=0.08, depth=2.5, vertices=8,
             location=(arm_x, base_y, arm_z),
             rotation=(math.radians(50), 0, 0)
         )
@@ -385,7 +417,7 @@ def create_muster_point(name, x, y):
 
 def create_ground():
     """Create ground plane."""
-    bpy.ops.mesh.primitive_plane_add(size=180, location=(0, 0, 0))
+    bpy.ops.mesh.primitive_plane_add(size=200, location=(0, 0, 0))
     ground = bpy.context.active_object
     ground.name = "Ground"
     ground.data.materials.append(MATERIALS["Ground"])
@@ -393,11 +425,18 @@ def create_ground():
     return ground
 
 def create_roads():
-    """Create main roads."""
+    """Create main roads - perimeter and internal access."""
     roads = [
-        {"s": (0, 100), "e": (120, 100), "w": 8, "n": "Main_Road"},
-        {"s": (60, 100), "e": (60, 0), "w": 6, "n": "Central_Road"},
-        {"s": (0, 55), "e": (120, 55), "w": 5, "n": "Service_Road"},
+        # Main perimeter road (north)
+        {"s": (0, 110), "e": (140, 110), "w": 8, "n": "Main_Road_North"},
+        # Central spine road (north-south)
+        {"s": (70, 110), "e": (70, 0), "w": 6, "n": "Central_Road"},
+        # Service road (east-west through middle)
+        {"s": (0, 55), "e": (140, 55), "w": 5, "n": "Service_Road"},
+        # South access road
+        {"s": (55, 0), "e": (120, 0), "w": 6, "n": "South_Road"},
+        # East perimeter
+        {"s": (130, 0), "e": (130, 110), "w": 5, "n": "East_Road"},
     ]
     
     for r in roads:

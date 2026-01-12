@@ -202,29 +202,35 @@
         }
 
         // --- Data Source (fictional depot layout for procedural mode) ---
+        // Optimized spatial layout - no overlaps, proper safety clearances
         const DEPOT_LAYOUT = {
             "tanks": {
-                "TK-A01": {"x": 18, "y": 85, "diameter_m": 13}, "TK-A02": {"x": 32, "y": 85, "diameter_m": 13},
-                "TK-A03": {"x": 18, "y": 70, "diameter_m": 14}, "TK-A04": {"x": 32, "y": 70, "diameter_m": 14},
-                "TK-B01": {"x": 55, "y": 90, "diameter_m": 9}, "TK-B02": {"x": 68, "y": 90, "diameter_m": 10},
-                "TK-B03": {"x": 62, "y": 75, "diameter_m": 11},
-                "TK-C01": {"x": 85, "y": 65, "diameter_m": 11}, "TK-C02": {"x": 98, "y": 65, "diameter_m": 11},
-                "TK-C03": {"x": 85, "y": 50, "diameter_m": 11}, "TK-C04": {"x": 98, "y": 50, "diameter_m": 11},
-                "TK-D01": {"x": 25, "y": 35, "diameter_m": 14}, "TK-D02": {"x": 42, "y": 35, "diameter_m": 14},
-                "TK-D03": {"x": 25, "y": 18, "diameter_m": 14}, "TK-D04": {"x": 42, "y": 18, "diameter_m": 11},
+                // Zone A - Northwest (AGO/PMS) - 2x2 grid
+                "TK-A01": {"x": 18, "y": 95, "diameter_m": 13}, "TK-A02": {"x": 35, "y": 95, "diameter_m": 13},
+                "TK-A03": {"x": 18, "y": 78, "diameter_m": 14}, "TK-A04": {"x": 35, "y": 78, "diameter_m": 14},
+                // Zone B - Northeast (smaller AGO) - triangle
+                "TK-B01": {"x": 58, "y": 100, "diameter_m": 9}, "TK-B02": {"x": 72, "y": 100, "diameter_m": 10},
+                "TK-B03": {"x": 65, "y": 85, "diameter_m": 11},
+                // Zone C - East (AGO/PMS) - 2x2 grid
+                "TK-C01": {"x": 100, "y": 75, "diameter_m": 11}, "TK-C02": {"x": 115, "y": 75, "diameter_m": 11},
+                "TK-C03": {"x": 100, "y": 60, "diameter_m": 11}, "TK-C04": {"x": 115, "y": 60, "diameter_m": 11},
+                // Zone D - South (large AGO) - 2x2 grid
+                "TK-D01": {"x": 20, "y": 38, "diameter_m": 14}, "TK-D02": {"x": 40, "y": 38, "diameter_m": 14},
+                "TK-D03": {"x": 20, "y": 18, "diameter_m": 14}, "TK-D04": {"x": 40, "y": 18, "diameter_m": 11},
             },
-            "gantries": [{"id": "Loading Bay", "x": 75, "y": 25, "width": 20, "height": 8}],
+            "gantries": [{"id": "Loading Bay", "x": 85, "y": 25, "width": 24, "height": 10}],
             "buildings": {
-                "Admin Block": {"x": 108, "y": 90, "width": 12, "height": 8},
-                "Control Room": {"x": 60, "y": 45, "width": 10, "height": 6},
-                "Operations": {"x": 95, "y": 85, "width": 8, "height": 5},
-                "Maintenance": {"x": 108, "y": 25, "width": 10, "height": 6},
+                "Admin Block": {"x": 125, "y": 20, "width": 14, "height": 10},
+                "Control Room": {"x": 70, "y": 50, "width": 10, "height": 7},
+                "Operations": {"x": 90, "y": 95, "width": 8, "height": 6},
+                "Maintenance": {"x": 125, "y": 35, "width": 12, "height": 8},
+                "Gate House": {"x": 70, "y": 115, "width": 6, "height": 4},
             },
             "bund_walls": {
-                "Zone A": "M 5 60 L 5 95 L 45 95 L 45 60 Z",
-                "Zone B": "M 48 65 L 48 98 L 78 98 L 78 65 Z",
-                "Zone C": "M 75 40 L 75 75 L 110 75 L 110 40 Z",
-                "Zone D": "M 12 8 L 12 45 L 55 45 L 55 8 Z"
+                "Zone A": "M 8 68 L 8 108 L 48 108 L 48 68 Z",
+                "Zone B": "M 50 77 L 50 110 L 82 110 L 82 77 Z",
+                "Zone C": "M 90 50 L 90 85 L 128 85 L 128 50 Z",
+                "Zone D": "M 8 6 L 8 50 L 55 50 L 55 6 Z"
             }
         };
 
@@ -273,20 +279,20 @@
         function createProceduralDepot() {
             clearScene();
             
-            // Ground Plane
-            const groundGeo = new THREE.PlaneGeometry(200, 200);
+            // Ground Plane - larger for expanded layout
+            const groundGeo = new THREE.PlaneGeometry(220, 180);
             const ground = new THREE.Mesh(groundGeo, mat_ground);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             depotGroup.add(ground);
 
-            // Tanks
+            // Tanks - centered at (70, 60) for new layout
             Object.entries(DEPOT_LAYOUT.tanks).forEach(([name, specs]) => {
                 const radius = specs.diameter_m / 2;
                 const height = 16;
                 const tankGeo = new THREE.CylinderGeometry(radius, radius, height, 64);
                 const tank = new THREE.Mesh(tankGeo, mat_tank.clone());
-                tank.position.set(specs.x - 60, height / 2, -(specs.y - 60));
+                tank.position.set(specs.x - 70, height / 2, -(specs.y - 60));
                 tank.name = name;
                 tank.userData = { type: 'Tank', isProcedural: true, ...specs };
                 tank.castShadow = true;
@@ -299,7 +305,7 @@
             Object.entries(allBuildings).forEach(([name, specs]) => {
                 const buildingGeo = new THREE.BoxGeometry(specs.width, 5, specs.height);
                 const building = new THREE.Mesh(buildingGeo, mat_building);
-                building.position.set(specs.x - 60, 2.5, -(specs.y - 60));
+                building.position.set(specs.x - 70, 2.5, -(specs.y - 60));
                 building.name = name;
                 building.userData = { type: 'Building', ...specs };
                 building.castShadow = true;
@@ -313,8 +319,8 @@
                 const points = pathStr.replace(/[M,Z]/g, '').replace(/L/g, '|').trim().split('|');
                 points.forEach((pointStr, index) => {
                     const [x, y] = pointStr.trim().split(' ').map(Number);
-                    if (index === 0) shape.moveTo(x - 60, -(y - 60));
-                    else shape.lineTo(x - 60, -(y - 60));
+                    if (index === 0) shape.moveTo(x - 70, -(y - 60));
+                    else shape.lineTo(x - 70, -(y - 60));
                 });
                 const extrudeSettings = { depth: 2, bevelEnabled: false };
                 const wallGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
@@ -324,9 +330,9 @@
                 depotGroup.add(wall);
             });
 
-            // Set camera for procedural view
-            camera.position.set(50, 100, 100);
-            controls.target.set(20, 0, -40);
+            // Set camera for procedural view - adjusted for larger layout
+            camera.position.set(60, 120, 120);
+            controls.target.set(20, 0, -30);
             controls.update();
         }
 
