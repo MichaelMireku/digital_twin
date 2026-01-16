@@ -705,7 +705,7 @@
         // API Key button handler
         document.getElementById('api-key-btn').addEventListener('click', () => {
             const currentKey = localStorage.getItem('depot_api_key') || '';
-            const newKey = prompt('Enter API Key (check your .env file for API_KEY value):', currentKey);
+            const newKey = prompt('Enter API Key:', currentKey);
             if (newKey !== null) {
                 localStorage.setItem('depot_api_key', newKey);
                 location.reload(); // Reload to use new key
