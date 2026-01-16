@@ -76,8 +76,38 @@ def internal_server_error(e):
     return jsonify(error="Internal server error occurred."), 500
 
 # --- API Endpoints ---
+@app.route('/', methods=['GET'])
+def api_root():
+    """Root endpoint with API information."""
+    return jsonify({
+        "name": "Digital Twin Depot API",
+        "version": "1.0",
+        "status": "operational",
+        "endpoints": {
+            "health": "/health",
+            "assets": "/api/v1/assets",
+            "alerts": "/api/v1/alerts/active",
+            "logs": "/api/v1/logs",
+            "simulations": {
+                "fire_consequence": "/api/v1/simulations/fire-consequence",
+                "tank_transfer": "/api/v1/simulations/tank-transfer"
+            },
+            "pump_costs": "/api/v1/pumps/costs",
+            "ui": {
+                "simulator_monitor": "/simulator-monitor",
+                "3d_view": "/3dview"
+            }
+        },
+        "documentation": "All /api/v1/* endpoints require API key authentication via X-API-Key header"
+    })
+
 @app.route('/health', methods=['GET'])
 def health_check():
+    return jsonify(status="ok")
+
+@app.route('/api/health', methods=['GET'])
+def api_health_check():
+    """Health check at /api/health for consistency."""
     return jsonify(status="ok")
 
 @app.route('/simulator-monitor')
