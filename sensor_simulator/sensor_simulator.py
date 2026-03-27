@@ -186,23 +186,54 @@ class SensorSimulator:
             time.sleep(settings.SIMULATION_INTERVAL_SECONDS)
 
 def main():
-    """Entry point for the sensor simulator."""
+    """Entry point for the sensor simulator with robust cross-platform connection handling."""
     logger.info("Starting Sensor Simulator service...")
+    logger.info("Attempting to connect to cross-platform database (Railway -> Render)...")
     
-    with database.get_db() as db:
-        if not db:
-            logger.critical("Could not get a database session. Exiting.")
-            return
-        
-        # Fetch assets from the database to simulate
-        assets_to_simulate, _ = database.get_all_asset_metadata_paginated(db, per_page=1000)
+    max_retries = 10
+    retry_delay = 5
+    
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"Database connection attempt {attempt + 1}/{max_retries}...")
+            
+            with database.get_db() as db:
+                if not db:
+                    raise Exception("Could not get a database session")
+                
+                # Fetch assets from the database to simulate
+                logger.info("Fetching assets from database...")
+                assets_to_simulate, total = database.get_all_asset_metadata_paginated(db, per_page=1000)
+            
+            if not assets_to_simulate:
+                logger.warning("No assets found in the database. Simulator will not run.")
+                logger.info("Please ensure assets are populated in the database.")
+                return
 
-    if not assets_to_simulate:
-        logger.warning("No assets found in the database. Simulator will not run.")
-        return
-
-    simulator = SensorSimulator(assets_to_simulate)
-    simulator.run()
+            logger.info(f"Successfully loaded {len(assets_to_simulate)} assets from database")
+            logger.info("Starting simulation loop...")
+            
+            simulator = SensorSimulator(assets_to_simulate)
+            simulator.run()
+            break  # Success, exit retry loop
+            
+        except Exception as e:
+            attempt_num = attempt + 1
+            if attempt_num < max_retries:
+                wait_time = min(retry_delay * (2 ** attempt), 120)  # Exponential backoff, max 2 minutes
+                logger.warning(f"Database connection failed (attempt {attempt_num}/{max_retries}): {str(e)[:100]}")
+                logger.info(f"Retrying in {wait_time}s... (This is normal for cross-platform connections)")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"Failed to connect to database after {max_retries} attempts")
+                logger.error(f"Last error: {e}")
+                logger.info("Possible causes:")
+                logger.info("  1. Network connectivity issues between Railway and Render")
+                logger.info("  2. Database connection limit reached")
+                logger.info("  3. Database server temporarily unavailable")
+                logger.info("  4. SSL/TLS handshake failures")
+                logger.info("Simulator will exit. It will retry on next deployment.")
+                return
 
 if __name__ == "__main__":
     main()

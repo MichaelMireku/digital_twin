@@ -1,13 +1,15 @@
 import datetime
 import logging
 import json
+import time
 from typing import List, Dict, Any, Optional, Tuple
 from contextlib import contextmanager
 from decimal import Decimal
 
 from sqlalchemy import create_engine, select, update, desc, text, func, union_all
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
+from sqlalchemy.pool import NullPool
 
 from config import settings
 from data.db_models import Base, Asset, SensorReading, CalculatedData, AlertConfiguration, OperationLog, StrappingData, Alert
@@ -16,9 +18,29 @@ from utils.helpers import parse_iso_datetime
 logger = logging.getLogger(__name__)
 
 try:
-    engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+    # Optimized for cross-platform connections (Railway -> Render)
+    connect_args = {
+        "connect_timeout": 30,  # Increased for cross-platform
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5,
+        "sslmode": "prefer",  # More tolerant of SSL issues
+        "application_name": "digital_twin_app"
+    }
+    
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_pre_ping=True,  # Test connections before using
+        pool_size=2,  # Reduced for cross-platform stability
+        max_overflow=3,  # Lower overflow
+        pool_recycle=300,  # Recycle connections every 5 minutes
+        pool_timeout=30,
+        connect_args=connect_args,
+        echo_pool=False
+    )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    logger.info("Database engine created successfully and SessionLocal configured.")
+    logger.info("Database engine created successfully with cross-platform optimizations.")
 except Exception as e:
     logger.critical(f"CRITICAL: Failed to create database engine or SessionLocal: {e}", exc_info=True)
     engine = None
@@ -26,21 +48,43 @@ except Exception as e:
 
 @contextmanager
 def get_db() -> Optional[Session]:
-    """Provide a transactional scope around a series of operations."""
+    """Provide a transactional scope with retry logic for cross-platform connections."""
     if not SessionLocal:
         logger.error("Database SessionLocal is not initialized. Cannot provide DB session.")
         yield None
         return
 
-    db = SessionLocal()
-    try:
-        yield db
-    except SQLAlchemyError as e:
-        logger.error(f"Database Session Error during yield: {e}", exc_info=True)
-        db.rollback()
-        raise
-    finally:
-        db.close()
+    max_retries = 3
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
+        db = SessionLocal()
+        try:
+            # Test connection
+            db.execute(text("SELECT 1"))
+            yield db
+            db.commit()
+            return
+        except OperationalError as e:
+            db.rollback()
+            db.close()
+            if attempt < max_retries - 1:
+                logger.warning(f"Connection error (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay}s: {e}")
+                time.sleep(retry_delay)
+                retry_delay *= 2
+            else:
+                logger.error(f"Failed to connect after {max_retries} attempts: {e}", exc_info=True)
+                raise
+        except SQLAlchemyError as e:
+            logger.error(f"Database Session Error: {e}", exc_info=True)
+            db.rollback()
+            db.close()
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in database session: {e}", exc_info=True)
+            db.rollback()
+            db.close()
+            raise
 
 def save_sensor_reading(db: Session, time: datetime.datetime, asset_id: str, data_source_id: str,
                        metric_name: str, value: Any, unit: Optional[str], status: str) -> bool:
@@ -94,16 +138,30 @@ def save_calculated_data(db: Session, time: datetime.datetime, asset_id: str, me
         return False
 
 def get_all_asset_metadata_paginated(db: Session, page: int = 1, per_page: int = 100) -> Tuple[List[Dict[str, Any]], int]:
+    """Get paginated asset metadata with retry logic for unreliable connections."""
     if not db: return [], 0
-    try:
-        offset = (page - 1) * per_page
-        total = db.execute(select(func.count(Asset.asset_id))).scalar_one()
-        query = select(Asset).order_by(Asset.asset_id).limit(per_page).offset(offset)
-        results = db.execute(query).scalars().all()
-        return [asset.to_dict() for asset in results], total
-    except SQLAlchemyError as e:
-        logger.error(f"DB Error getting all asset metadata: {e}", exc_info=True)
-        return [], 0
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            offset = (page - 1) * per_page
+            total = db.execute(select(func.count(Asset.asset_id))).scalar_one()
+            query = select(Asset).order_by(Asset.asset_id).limit(per_page).offset(offset)
+            results = db.execute(query).scalars().all()
+            return [asset.to_dict() for asset in results], total
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Query failed (attempt {attempt + 1}/{max_retries}), retrying: {e}")
+                time.sleep(2 ** attempt)  # Exponential backoff
+                db.rollback()
+            else:
+                logger.error(f"DB Error getting all asset metadata after {max_retries} attempts: {e}", exc_info=True)
+                return [], 0
+        except SQLAlchemyError as e:
+            logger.error(f"DB Error getting all asset metadata: {e}", exc_info=True)
+            return [], 0
+    
+    return [], 0
 
 def get_asset_metadata(db: Session, asset_id: str) -> Optional[Dict[str, Any]]:
     if not db: return None
