@@ -12,7 +12,7 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: pip install -r api/requirements.txt
+    buildCommand: pip install -r api/requirements.txt && python init_database.py
     startCommand: gunicorn api.app:app -b 0.0.0.0:$PORT
     envVars:
       - key: DB_HOST
@@ -45,7 +45,7 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python init_database.py
     startCommand: gunicorn dashboard:server -b 0.0.0.0:$PORT
     envVars:
       - key: DB_HOST
